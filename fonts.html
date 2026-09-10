@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>d·ally type</title>
+  <style>
+    /* Loaded via JS below so a network blip does not blank the page */
+    :root {
+      --bg: #0c1014;
+      --ink: #f2f2f7;
+      --muted: #a1a1a6;
+      --aqua: #2cd4ff;
+      --aqua-ink: #8ae8ff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background:
+        radial-gradient(1200px 600px at 90% -10%, rgba(44,212,255,.28), transparent 55%),
+        radial-gradient(800px 500px at 10% 0%, rgba(44,212,255,.16), transparent 50%),
+        var(--bg);
+      color: var(--ink);
+      font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+      padding: 40px 24px 80px;
+    }
+    .bar {
+      max-width: 1080px;
+      margin: 0 0 28px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: rgba(44,212,255,.12);
+      border: 1px solid rgba(44,212,255,.28);
+      font-size: 14px;
+      color: var(--aqua-ink);
+    }
+    h1 {
+      font-weight: 700;
+      font-size: 28px;
+      margin: 0 0 8px;
+    }
+    .lede {
+      color: var(--muted);
+      max-width: 640px;
+      margin: 0 0 36px;
+      line-height: 1.45;
+    }
+    .grid { display: grid; gap: 20px; max-width: 1080px; }
+    article {
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(44,212,255,.18);
+      border-radius: 20px;
+      padding: 28px 28px 24px;
+    }
+    .tag {
+      display: inline-block;
+      font-size: 11px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--aqua);
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+    .pair { color: var(--muted); font-size: 13px; margin: 0 0 22px; }
+    .mark {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 52px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin: 0 0 10px;
+    }
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--aqua);
+      box-shadow: 0 0 14px rgba(44,212,255,.7);
+      flex: none;
+      margin-top: 2px;
+    }
+    .tagline { color: var(--aqua-ink); font-size: 18px; margin: 0 0 18px; }
+    .ui {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+    @media (max-width: 700px) {
+      .ui { grid-template-columns: 1fr; }
+      .mark { font-size: 40px; }
+    }
+    .title { font-size: 22px; font-weight: 600; margin: 0 0 6px; }
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 10px 0;
+      border-top: 1px solid rgba(255,255,255,.08);
+    }
+    .name { font-size: 16px; font-weight: 500; }
+    .time { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 14px; }
+    .caption { font-size: 13px; color: var(--muted); margin: 0; }
+    .btn {
+      display: inline-block;
+      margin-top: 14px;
+      background: var(--aqua);
+      color: #102026;
+      font-weight: 600;
+      font-size: 14px;
+      padding: 10px 16px;
+      border-radius: 999px;
+    }
+    .rec { outline: 1px solid var(--aqua); }
+
+    .p-sora { font-family: "Sora", ui-sans-serif, system-ui, sans-serif; }
+    .s-figtree { font-family: "Figtree", ui-sans-serif, system-ui, sans-serif; }
+    .p-space { font-family: "Space Grotesk", ui-sans-serif, system-ui, sans-serif; }
+    .s-plex { font-family: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif; }
+    .p-jakarta { font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif; }
+    .s-source { font-family: "Source Sans 3", ui-sans-serif, system-ui, sans-serif; }
+    .p-outfit { font-family: "Outfit", ui-sans-serif, system-ui, sans-serif; }
+  </style>
+</head>
+<body>
+  <div class="bar">
+    If this page is blank elsewhere, open:
+    <strong>http://127.0.0.1:8765/fonts.html</strong>
+    or double-click <strong>fonts.html</strong> in the d-ally folder.
+  </div>
+
+  <h1 class="p-sora">Type for d·ally</h1>
+  <p class="lede s-figtree">Primary = wordmark, Today, reminder names. Secondary = times, notes, settings. Pick a pair; page works even if webfonts are slow.</p>
+
+  <div class="grid">
+
+    <article class="rec">
+      <div class="tag s-figtree">Recommended</div>
+      <p class="pair s-figtree">Primary Sora · Secondary Figtree</p>
+      <div class="mark p-sora">
+        <span>d</span><span class="dot"></span><span>ally</span>
+      </div>
+      <p class="tagline s-figtree">Daily reminders.</p>
+      <div class="ui">
+        <div>
+          <p class="title p-sora">Today</p>
+          <p class="caption s-figtree">Same clock time, every day.</p>
+          <div class="row">
+            <span class="name p-sora" style="font-weight:600">Take morning pill</span>
+            <span class="time s-figtree">8:00 AM</span>
+          </div>
+          <div class="row">
+            <span class="name p-sora" style="font-weight:600">Gym</span>
+            <span class="time s-figtree">by 9:00 PM</span>
+          </div>
+        </div>
+        <div>
+          <p class="caption s-figtree">Sora is geometric without going stiff. The d counter is round, so the ally-dot sits naturally. Figtree is softer for body and clock times.</p>
+          <span class="btn s-figtree">Add reminder</span>
+        </div>
+      </div>
+    </article>
+
+    <article>
+      <div class="tag s-plex">Pair 2</div>
+      <p class="pair s-plex">Primary Space Grotesk · Secondary IBM Plex Sans</p>
+      <div class="mark p-space">
+        <span>d</span><span class="dot"></span><span>ally</span>
+      </div>
+      <p class="tagline s-plex">Daily reminders.</p>
+      <div class="ui">
+        <div>
+          <p class="title p-space">Today</p>
+          <p class="caption s-plex">You pick a time. It repeats daily.</p>
+          <div class="row">
+            <span class="name p-space" style="font-weight:600">No cigarettes</span>
+            <span class="time s-plex">10:00 PM</span>
+          </div>
+        </div>
+        <div>
+          <p class="caption s-plex">Space Grotesk feels like a clock face: slightly odd, precise. Plex is built for numbers and settings lists.</p>
+          <span class="btn s-plex">Mark done</span>
+        </div>
+      </div>
+    </article>
+
+    <article>
+      <div class="tag s-source">Pair 3</div>
+      <p class="pair s-source">Primary Plus Jakarta Sans · Secondary Source Sans 3</p>
+      <div class="mark p-jakarta">
+        <span>d</span><span class="dot"></span><span>ally</span>
+      </div>
+      <p class="tagline s-source">Daily reminders.</p>
+      <div class="ui">
+        <div>
+          <p class="title p-jakarta">No reminders today</p>
+          <p class="caption s-source">Tap + to add one.</p>
+        </div>
+        <div>
+          <p class="caption s-source">Jakarta is friendlier and a bit rounder. Source Sans is quiet in Settings and Quiet hours.</p>
+          <span class="btn s-source">Allow</span>
+        </div>
+      </div>
+    </article>
+
+    <article>
+      <div class="tag s-figtree">Pair 4</div>
+      <p class="pair s-figtree">Primary Outfit · Secondary Figtree</p>
+      <div class="mark p-outfit">
+        <span>d</span><span class="dot"></span><span>ally</span>
+      </div>
+      <p class="tagline s-figtree">Daily reminders.</p>
+      <div class="ui">
+        <div>
+          <p class="title p-outfit">Past due</p>
+          <div class="row">
+            <span class="name p-outfit" style="font-weight:600">Evening pill</span>
+            <span class="time s-figtree">9:30 PM</span>
+          </div>
+        </div>
+        <div>
+          <p class="caption s-figtree">Outfit is wider and more poster-like on Today. Figtree still handles the small type.</p>
+          <span class="btn s-figtree">Skip</span>
+        </div>
+      </div>
+    </article>
+
+  </div>
+
+  <script>
+    (function () {
+      var link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = "https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=Outfit:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700&family=Sora:wght@500;600;700&family=Space+Grotesk:wght@500;600;700&family=Source+Sans+3:wght@400;500;600&display=swap";
+      link.onerror = function () {
+        var bar = document.querySelector(".bar");
+        if (bar) bar.textContent = "Webfonts did not load (offline?). Layout still works with system fonts.";
+      };
+      document.head.appendChild(link);
+    })();
+  </script>
+</body>
+</html>
