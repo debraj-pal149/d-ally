@@ -1,10 +1,32 @@
 import SwiftUI
 
+enum CalendarMarksMode: String, CaseIterable, Identifiable {
+    case kept
+    case missed
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .kept: AppCopy.calendarModeKept
+        case .missed: AppCopy.calendarModeMissed
+        }
+    }
+
+    var legend: String {
+        switch self {
+        case .kept: AppCopy.calendarLegend
+        case .missed: AppCopy.calendarLegendMissed
+        }
+    }
+}
+
 struct MonthGridView: View {
     var month: Date
     var selectedDay: Date?
     var tasks: [DailyTask]
     var logs: [TaskDayLog]
+    var marksMode: CalendarMarksMode = .kept
     var onSelect: (Date) -> Void
 
     private var calendar: Calendar { Calendar.current }
@@ -45,7 +67,8 @@ struct MonthGridView: View {
                                 day: day,
                                 isSelected: selectedDay.map { Date.isSameLocalDay($0, day) } ?? false,
                                 marks: marks(for: day),
-                                cellHeight: cellHeight
+                                cellHeight: cellHeight,
+                                marksStyle: marksMode == .missed ? .missed : .kept
                             )
                             .onTapGesture { onSelect(day) }
                         } else {
@@ -73,23 +96,46 @@ struct MonthGridView: View {
     }
 
     private func marks(for day: Date) -> DayMarks {
-        if day.startOfLocalDay > Date().startOfLocalDay {
+        let today = Date().startOfLocalDay
+        let dayStart = day.startOfLocalDay
+        if dayStart > today {
             return DayMarks(dots: [], skipOnly: false)
         }
-        let key = day.localDayKey
-        let dayLogs = logs.filter { $0.dayKey == key }
-        let kept = dayLogs.filter { $0.dayLogStatus == .kept }
-        let skipped = dayLogs.filter { $0.dayLogStatus == .skipped }
+
         let byId = Dictionary(uniqueKeysWithValues: tasks.map { ($0.id, $0) })
-        let keptTasks = kept.compactMap { byId[$0.taskId] }
-            .sorted { a, b in
-                let da = a.dueDate(on: day)
-                let db = b.dueDate(on: day)
-                if da != db { return da < db }
-                return a.name < b.name
+
+        switch marksMode {
+        case .kept:
+            let key = day.localDayKey
+            let dayLogs = logs.filter { $0.dayKey == key }
+            let kept = dayLogs.filter { $0.dayLogStatus == .kept }
+            let skipped = dayLogs.filter { $0.dayLogStatus == .skipped }
+            let keptTasks = kept.compactMap { byId[$0.taskId] }
+                .sorted { a, b in
+                    let da = a.dueDate(on: day)
+                    let db = b.dueDate(on: day)
+                    if da != db { return da < db }
+                    return a.name < b.name
+                }
+            let dots = keptTasks.map { MarkDot(hex: $0.colorHex, pattern: $0.markPatternKind) }
+            return DayMarks(dots: dots, skipOnly: dots.isEmpty && !skipped.isEmpty)
+
+        case .missed:
+            // Missed only applies to past days (open logs after the day ended).
+            guard dayStart < today else {
+                return DayMarks(dots: [], skipOnly: false)
             }
-        let dots = keptTasks.map { MarkDot(hex: $0.colorHex, pattern: $0.markPatternKind) }
-        return DayMarks(dots: dots, skipOnly: dots.isEmpty && !skipped.isEmpty)
+            let active = TaskOccurrenceService.tasks(for: day, allTasks: tasks)
+            let missed = active.filter { DayLogService.status(taskId: $0.id, day: day, logs: logs) == nil }
+                .sorted { a, b in
+                    let da = a.dueDate(on: day)
+                    let db = b.dueDate(on: day)
+                    if da != db { return da < db }
+                    return a.name < b.name
+                }
+            let dots = missed.map { MarkDot(hex: $0.colorHex, pattern: $0.markPatternKind) }
+            return DayMarks(dots: dots, skipOnly: false)
+        }
     }
 }
 
@@ -101,4 +147,9 @@ struct MarkDot: Equatable {
 struct DayMarks {
     var dots: [MarkDot]
     var skipOnly: Bool
+}
+
+enum CalendarDotStyle {
+    case kept
+    case missed
 }

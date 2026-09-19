@@ -25,6 +25,8 @@ struct TaskEditorView: View {
     @State private var priority: PriorityLevel = .normal
     @State private var colorHex = TaskColorPalette.all[0].hex
     @State private var markPattern: MarkPattern = .solid
+    @State private var repeatOption: RepeatOption = .daily
+    @State private var weeklyWeekdaysMask = WeeklyWeekdays.todayMask()
     @State private var untilStopped = true
     @State private var endDate = Date().startOfLocalDay
     @State private var overdueMode: OverdueReminderMode = .onceAfter10Minutes
@@ -41,6 +43,9 @@ struct TaskEditorView: View {
     private var canSave: Bool {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return false }
+        if repeatOption == .weekly, weeklyWeekdaysMask == 0 {
+            return false
+        }
         if kind == .flexibleUntil {
             return DailyTask.flexibleWindowValid(
                 nudgeHour: hour,
@@ -71,6 +76,10 @@ struct TaskEditorView: View {
                             nudgeMinute: $minute
                         )
                     }
+                }
+
+                Section("Repeat") {
+                    RepeatPicker(option: $repeatOption, weeklyWeekdaysMask: $weeklyWeekdaysMask)
                 }
 
                 Section {
@@ -154,6 +163,10 @@ struct TaskEditorView: View {
             priority = task.priorityLevel
             colorHex = task.colorHex
             markPattern = task.markPatternKind
+            repeatOption = task.repeatOption
+            weeklyWeekdaysMask = task.weeklyWeekdaysMask == 0
+                ? WeeklyWeekdays.todayMask()
+                : task.weeklyWeekdaysMask
             untilStopped = task.endDate == nil
             endDate = task.endDate ?? Date().startOfLocalDay
             overdueMode = task.overdueMode
@@ -163,6 +176,7 @@ struct TaskEditorView: View {
             colorHex = assignment.colorHex
             markPattern = assignment.pattern
             overdueMode = OverdueReminderMode(rawValue: defaultOverdueMode) ?? .onceAfter10Minutes
+            weeklyWeekdaysMask = WeeklyWeekdays.todayMask()
         }
     }
 
@@ -188,6 +202,11 @@ struct TaskEditorView: View {
         task.priorityLevel = priority
         task.colorHex = colorHex
         task.markPatternKind = markPattern
+        task.repeatOption = repeatOption
+        task.weeklyWeekdaysMask = repeatOption == .weekly ? weeklyWeekdaysMask : 0
+        if repeatOption == .every2Days || repeatOption == .every3Days {
+            task.repeatIntervalDays = repeatOption.intervalDays
+        }
         task.endDate = untilStopped ? nil : endDate.startOfLocalDay
         task.overdueMode = overdueMode
         task.notificationsEnabled = notificationsEnabled

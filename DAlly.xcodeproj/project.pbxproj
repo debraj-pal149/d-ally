@@ -81,6 +81,8 @@
 		B9656824780987410A2E3E22 /* MarkPattern.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C3F169062A1C51EF736B9B1 /* MarkPattern.swift */; };
 		89EF2261FAA8989A2B125C7A /* PatternedMark.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64648F911BCD12D04D081A66 /* PatternedMark.swift */; };
 		E9052F4511F6E36568372AB6 /* WeekReviewBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF739925F8C926773D9E2E6E /* WeekReviewBanner.swift */; };
+		E0A545BFF16DE2D2653086CC /* RepeatKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C2BFB03FBB600F92C79A3C7 /* RepeatKind.swift */; };
+		9861C4F470648BF734CEA632 /* RepeatPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00D4BFDFA331FDFEF0CF2D /* RepeatPicker.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -171,6 +173,8 @@
 		7C3F169062A1C51EF736B9B1 /* MarkPattern.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkPattern.swift; sourceTree = "<group>"; };
 		64648F911BCD12D04D081A66 /* PatternedMark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatternedMark.swift; sourceTree = "<group>"; };
 		CF739925F8C926773D9E2E6E /* WeekReviewBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekReviewBanner.swift; sourceTree = "<group>"; };
+		5C2BFB03FBB600F92C79A3C7 /* RepeatKind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepeatKind.swift; sourceTree = "<group>"; };
+		CD00D4BFDFA331FDFEF0CF2D /* RepeatPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepeatPicker.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -378,6 +382,7 @@
 		CFC259F81A7B3CE85B6509FD /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				5C2BFB03FBB600F92C79A3C7 /* RepeatKind.swift */,
 				7C3F169062A1C51EF736B9B1 /* MarkPattern.swift */,
 				E4FACA9880EA231365D6720D /* AppearanceMode.swift */,
 				FA29E78C791887167A5FBD7F /* DailyTask.swift */,
@@ -405,6 +410,7 @@
 		FABAF1C65A94A0D97F0034F2 /* TaskEditor */ = {
 			isa = PBXGroup;
 			children = (
+				CD00D4BFDFA331FDFEF0CF2D /* RepeatPicker.swift */,
 				178B38A631DF0F2F0627A902 /* ColorSwatchPicker.swift */,
 				FF09A4EE719FC4084743607C /* DurationPicker.swift */,
 				810DE0095483D1D1B050E396 /* FlexibleWindowFields.swift */,
@@ -541,9 +547,11 @@
 				05A27B39BC3FDB363BE97596 /* PriorityPicker.swift in Sources */,
 				3245ACB92DB129C133A69B63 /* ScheduleKindPicker.swift in Sources */,
 				F4D0D2C3B0EBF71877D55935 /* TaskEditorView.swift in Sources */,
+				9861C4F470648BF734CEA632 /* RepeatPicker.swift in Sources */,
 				58196CEF7BAD2CDE97BCFC37 /* TimeOfDayPicker.swift in Sources */,
 				2EAD2061B3F9BFB083D31F71 /* AppearanceMode.swift in Sources */,
 				745B5943459DF8ECA90DDB83 /* DailyTask.swift in Sources */,
+				E0A545BFF16DE2D2653086CC /* RepeatKind.swift in Sources */,
 				B9656824780987410A2E3E22 /* MarkPattern.swift in Sources */,
 				7C9F0F3E28416F59C8C6C168 /* DayLogStatus.swift in Sources */,
 				CC590C6400F7226B3D7C937F /* OverdueReminderMode.swift in Sources */,

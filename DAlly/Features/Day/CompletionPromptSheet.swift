@@ -176,6 +176,14 @@ struct CompletionPromptSheet: View {
                     Text(scheduleLine(task))
                         .font(AppTypography.time.monospacedDigit())
                         .foregroundStyle(AppColors.textSecondary(scheme))
+                    if task.repeatCadence != .daily {
+                        Text("·")
+                            .foregroundStyle(AppColors.textTertiary(scheme))
+                        Text(task.repeatSummary)
+                            .font(AppTypography.caption)
+                            .foregroundStyle(AppColors.textSecondary(scheme))
+                            .lineLimit(1)
+                    }
                     DayStatusChip(text: statusHeadline, tint: statusTint(color))
                 }
             }

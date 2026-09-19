@@ -5,13 +5,20 @@ struct DayCellView: View {
     var isSelected: Bool
     var marks: DayMarks
     var cellHeight: CGFloat = 52
+    var marksStyle: CalendarDotStyle = .kept
     @Environment(\.colorScheme) private var scheme
 
     private var isToday: Bool { Date.isSameLocalDay(day, Date()) }
+    /// Single shared tint for any marked day — task identity lives in the dots, not the cell wash.
     private var wash: Color {
-        if let hex = marks.dots.first?.hex { return Color(hex: hex) }
+        if !marks.dots.isEmpty { return AppColors.aqua }
         if marks.skipOnly { return AppColors.textTertiary(scheme) }
         return .clear
+    }
+
+    private var washOpacity: Double {
+        if marks.dots.isEmpty { return marks.skipOnly ? 0.08 : 0 }
+        return scheme == .dark ? 0.16 : 0.12
     }
 
     var body: some View {
@@ -36,12 +43,14 @@ struct DayCellView: View {
         .frame(height: cellHeight)
         .background(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(wash.opacity(marks.dots.isEmpty ? 0.08 : (scheme == .dark ? 0.22 : 0.16)))
+                .fill(wash.opacity(washOpacity))
         )
         .overlay {
             RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .stroke(
-                    isToday ? AppColors.aqua.opacity(0.9) : wash.opacity(marks.dots.isEmpty ? 0.08 : 0.35),
+                    isToday
+                        ? AppColors.aqua.opacity(0.9)
+                        : wash.opacity(marks.dots.isEmpty ? (marks.skipOnly ? 0.2 : 0) : 0.35),
                     lineWidth: isToday ? 1.5 : 1
                 )
         }
@@ -66,7 +75,13 @@ struct DayCellView: View {
                 )
                 LazyVGrid(columns: columns, alignment: .center, spacing: layout.spacing) {
                     ForEach(Array(marks.dots.enumerated()), id: \.offset) { _, dot in
-                        PatternedMark(hex: dot.hex, pattern: dot.pattern, size: layout.dotSize)
+                        if marksStyle == .missed {
+                            Circle()
+                                .strokeBorder(Color(hex: dot.hex), lineWidth: max(1, layout.dotSize * 0.22))
+                                .frame(width: layout.dotSize, height: layout.dotSize)
+                        } else {
+                            PatternedMark(hex: dot.hex, pattern: dot.pattern, size: layout.dotSize)
+                        }
                     }
                 }
                 .frame(width: geo.size.width, alignment: .top)

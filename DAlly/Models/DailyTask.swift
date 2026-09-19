@@ -22,6 +22,12 @@ final class DailyTask {
     var updatedAt: Date
     var sortOrder: Int
     var notificationsEnabled: Bool
+    /// daily | everyNDays | weekly
+    var repeatKind: String = RepeatKind.daily.rawValue
+    /// Used when repeatKind == everyNDays (2 or 3).
+    var repeatIntervalDays: Int = 2
+    /// Bitmask of Calendar weekdays (bit 0 = Sunday … bit 6 = Saturday).
+    var weeklyWeekdaysMask: Int = 0
 
     init(
         id: UUID = UUID(),
@@ -42,7 +48,10 @@ final class DailyTask {
         createdAt: Date = Date(),
         updatedAt: Date = Date(),
         sortOrder: Int = 0,
-        notificationsEnabled: Bool = true
+        notificationsEnabled: Bool = true,
+        repeatKind: RepeatKind = .daily,
+        repeatIntervalDays: Int = 2,
+        weeklyWeekdaysMask: Int = 0
     ) {
         self.id = id
         self.name = name
@@ -63,6 +72,9 @@ final class DailyTask {
         self.updatedAt = updatedAt
         self.sortOrder = sortOrder
         self.notificationsEnabled = notificationsEnabled
+        self.repeatKind = repeatKind.rawValue
+        self.repeatIntervalDays = repeatIntervalDays
+        self.weeklyWeekdaysMask = weeklyWeekdaysMask
     }
 
     var schedule: ScheduleKind {
@@ -85,6 +97,21 @@ final class DailyTask {
         set { markPattern = newValue.rawValue }
     }
 
+    var repeatCadence: RepeatKind {
+        get { RepeatKind(rawValue: repeatKind) ?? .daily }
+        set { repeatKind = newValue.rawValue }
+    }
+
+    var repeatOption: RepeatOption {
+        get { RepeatOption.from(kind: repeatCadence, intervalDays: repeatIntervalDays) }
+        set {
+            repeatCadence = newValue.kind
+            if newValue.kind == .everyNDays {
+                repeatIntervalDays = newValue.intervalDays
+            }
+        }
+    }
+
     func nudgeDate(on day: Date) -> Date {
         Calendar.current.date(on: day, hour: hour, minute: minute)
     }
@@ -101,9 +128,32 @@ final class DailyTask {
     func isActive(on day: Date) -> Bool {
         guard !isStopped else { return false }
         let dayStart = day.startOfLocalDay
-        if dayStart < startDate.startOfLocalDay { return false }
+        let start = startDate.startOfLocalDay
+        if dayStart < start { return false }
         if let end = endDate, dayStart > end.startOfLocalDay { return false }
-        return true
+
+        switch repeatCadence {
+        case .daily:
+            return true
+        case .everyNDays:
+            let n = max(repeatIntervalDays, 2)
+            let delta = Calendar.current.dateComponents([.day], from: start, to: dayStart).day ?? 0
+            return delta >= 0 && delta % n == 0
+        case .weekly:
+            let weekday = Calendar.current.component(.weekday, from: dayStart)
+            return WeeklyWeekdays.contains(mask: weeklyWeekdaysMask, weekday: weekday)
+        }
+    }
+
+    var repeatSummary: String {
+        switch repeatCadence {
+        case .daily:
+            return "Daily"
+        case .everyNDays:
+            return "Every \(max(repeatIntervalDays, 2)) days"
+        case .weekly:
+            return WeeklyWeekdays.summary(mask: weeklyWeekdaysMask)
+        }
     }
 
     var displayTimeLabel: String {

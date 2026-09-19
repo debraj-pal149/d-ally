@@ -134,6 +134,49 @@ final class WeekReviewSchedulingTests: XCTestCase {
     }
 }
 
+final class RepeatCadenceTests: XCTestCase {
+    func testEveryTwoDaysFromStart() {
+        let start = Date().startOfLocalDay
+        let task = DailyTask(
+            name: "Run",
+            colorHex: "#34C759",
+            startDate: start,
+            repeatKind: .everyNDays,
+            repeatIntervalDays: 2
+        )
+        XCTAssertTrue(task.isActive(on: start))
+        XCTAssertFalse(task.isActive(on: start.addingLocalDays(1)))
+        XCTAssertTrue(task.isActive(on: start.addingLocalDays(2)))
+        XCTAssertFalse(task.isActive(on: start.addingLocalDays(3)))
+        XCTAssertTrue(task.isActive(on: start.addingLocalDays(4)))
+    }
+
+    func testWeeklyOnlySelectedWeekday() {
+        let cal = Calendar.current
+        // 2026-09-07 is Monday
+        let monday = cal.date(from: DateComponents(calendar: cal, year: 2026, month: 9, day: 7))!.startOfLocalDay
+        XCTAssertEqual(cal.component(.weekday, from: monday), 2)
+        let task = DailyTask(
+            name: "Gym",
+            colorHex: "#007AFF",
+            startDate: monday.addingLocalDays(-7),
+            repeatKind: .weekly,
+            weeklyWeekdaysMask: WeeklyWeekdays.mask(for: [2]) // Monday
+        )
+        XCTAssertTrue(task.isActive(on: monday))
+        XCTAssertFalse(task.isActive(on: monday.addingLocalDays(1))) // Tue
+        XCTAssertTrue(task.isActive(on: monday.addingLocalDays(7)))
+    }
+
+    func testDailyStillEveryDay() {
+        let start = Date().startOfLocalDay
+        let task = DailyTask(name: "Pill", colorHex: "#FF3B30", startDate: start)
+        XCTAssertTrue(task.isActive(on: start))
+        XCTAssertTrue(task.isActive(on: start.addingLocalDays(1)))
+        XCTAssertFalse(task.isActive(on: start.addingLocalDays(-1)))
+    }
+}
+
 final class DayLogIndependenceTests: XCTestCase {
     @MainActor
     func testMarkingOneDayDoesNotAffectAnother() throws {

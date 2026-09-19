@@ -2,7 +2,7 @@
 
 Local-first iPhone app for **time-of-day daily habits** — not calendar-date todos.
 
-Set a clock time (or a finish-by window). Mark it **kept** each day. The calendar shows your consistency as color.
+- Set a clock time (or a finish-by window). Choose **Daily**, **Every 2/3 days**, or **Weekly** (pick weekdays). Mark it **kept** each active day. The calendar shows your consistency as color.
 
 **Tagline:** Daily consistency.
 

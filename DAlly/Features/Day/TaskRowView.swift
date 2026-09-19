@@ -103,27 +103,36 @@ struct TaskRowView: View {
                 }
         }
         .sectionOpacity(section.opacity)
+        // Force identity refresh when log status changes (missed → kept).
+        .id("\(task.id.uuidString)-\(status?.rawValue ?? "open")-\(section.rawValue)")
         .accessibilityHint(task.schedule == .flexibleUntil ? "\(task.name), before \(TimeDisplay.clock(hour: task.windowEndHour, minute: task.windowEndMinute))" : "")
         .accessibilityElement(children: .contain)
     }
 
     @ViewBuilder
     private var statusLabel: some View {
-        switch section {
-        case .pastDue:
-            DayStatusChip(text: "Past due", tint: AppColors.warning)
+        // Prefer live log status so the chip updates immediately when marking
+        // kept/skipped (section can lag during LazyVStack identity reuse).
+        switch status {
         case .kept:
             DayStatusChip(text: "Kept", tint: taskColor)
         case .skipped:
             DayStatusChip(text: "Skipped", tint: AppColors.textSecondary(scheme))
-        case .missed:
-            DayStatusChip(text: "Missed", tint: AppColors.danger(scheme))
-        case .nextHour, .later, .scheduled:
-            if task.schedule == .flexibleUntil, status == nil, section != .scheduled {
-                DayStatusChip(
-                    text: "Until \(TimeDisplay.clock(hour: task.windowEndHour, minute: task.windowEndMinute))",
-                    tint: AppColors.textTertiary(scheme)
-                )
+        case nil:
+            switch section {
+            case .pastDue:
+                DayStatusChip(text: "Past due", tint: AppColors.warning)
+            case .missed:
+                DayStatusChip(text: "Missed", tint: AppColors.danger(scheme))
+            case .nextHour, .later:
+                if task.schedule == .flexibleUntil {
+                    DayStatusChip(
+                        text: "Until \(TimeDisplay.clock(hour: task.windowEndHour, minute: task.windowEndMinute))",
+                        tint: AppColors.textTertiary(scheme)
+                    )
+                }
+            case .kept, .skipped, .scheduled:
+                EmptyView()
             }
         }
     }

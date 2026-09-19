@@ -8,6 +8,7 @@ struct MonthCalendarView: View {
     @Query private var logs: [TaskDayLog]
     @State private var selectedDay: Date?
     @State private var showDetail = false
+    @State private var marksMode: CalendarMarksMode = .kept
 
     var body: some View {
         @Bindable var router = router
@@ -24,7 +25,8 @@ struct MonthCalendarView: View {
                         month: router.calendarMonth,
                         selectedDay: selectedDay,
                         tasks: tasks,
-                        logs: logs
+                        logs: logs,
+                        marksMode: marksMode
                     ) { day in
                         selectedDay = day
                         showDetail = true
@@ -42,11 +44,15 @@ struct MonthCalendarView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
 
                     VStack(alignment: .leading, spacing: 8) {
-                        Text(AppCopy.calendarLegend)
-                            .font(AppTypography.caption)
-                            .foregroundStyle(AppColors.textTertiary(scheme))
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.85)
+                        HStack(alignment: .firstTextBaseline, spacing: 10) {
+                            Text(marksMode.legend)
+                                .font(AppTypography.caption)
+                                .foregroundStyle(AppColors.textTertiary(scheme))
+                                .lineLimit(2)
+                                .minimumScaleFactor(0.85)
+                            Spacer(minLength: 8)
+                            marksModeToggle
+                        }
                         legendChips
                     }
                     .padding(.horizontal, 16)
@@ -63,6 +69,37 @@ struct MonthCalendarView: View {
                 }
             }
         }
+    }
+
+    private var marksModeToggle: some View {
+        HStack(spacing: 0) {
+            ForEach(CalendarMarksMode.allCases) { mode in
+                Button {
+                    withAnimation(.easeInOut(duration: 0.18)) {
+                        marksMode = mode
+                    }
+                } label: {
+                    Text(mode.title)
+                        .font(AppTypography.captionSemibold)
+                        .foregroundStyle(
+                            marksMode == mode
+                                ? AppColors.textPrimary(scheme)
+                                : AppColors.textTertiary(scheme)
+                        )
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background {
+                            if marksMode == mode {
+                                Capsule().fill(AppColors.rowFill(scheme))
+                            }
+                        }
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(2)
+        .background(AppColors.rowFill(scheme).opacity(0.55), in: Capsule())
+        .accessibilityLabel("Calendar marks mode")
     }
 
     private var header: some View {
@@ -103,7 +140,13 @@ struct MonthCalendarView: View {
             HStack(spacing: 8) {
                 ForEach(tasks.filter { !$0.isStopped }, id: \.id) { task in
                     HStack(spacing: 6) {
-                        PatternedMark(hex: task.colorHex, pattern: task.markPatternKind, size: 8)
+                        if marksMode == .missed {
+                            Circle()
+                                .strokeBorder(Color(hex: task.colorHex), lineWidth: 1.5)
+                                .frame(width: 8, height: 8)
+                        } else {
+                            PatternedMark(hex: task.colorHex, pattern: task.markPatternKind, size: 8)
+                        }
                         Text(task.name)
                             .font(AppTypography.caption)
                             .lineLimit(1)
