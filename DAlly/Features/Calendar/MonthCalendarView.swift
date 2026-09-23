@@ -9,6 +9,7 @@ struct MonthCalendarView: View {
     @State private var selectedDay: Date?
     @State private var showDetail = false
     @State private var marksMode: CalendarMarksMode = .kept
+    @State private var focusedTaskIds: Set<UUID> = []
 
     var body: some View {
         @Bindable var router = router
@@ -26,7 +27,8 @@ struct MonthCalendarView: View {
                         selectedDay: selectedDay,
                         tasks: tasks,
                         logs: logs,
-                        marksMode: marksMode
+                        marksMode: marksMode,
+                        focusedTaskIds: focusedTaskIds
                     ) { day in
                         selectedDay = day
                         showDetail = true
@@ -54,6 +56,11 @@ struct MonthCalendarView: View {
                             marksModeToggle
                         }
                         legendChips
+                        Text(AppCopy.calendarFocusHint)
+                            .font(AppTypography.caption)
+                            .foregroundStyle(AppColors.textTertiary(scheme))
+                            .lineLimit(2)
+                            .minimumScaleFactor(0.85)
                     }
                     .padding(.horizontal, 16)
                     .padding(.top, 10)
@@ -139,24 +146,43 @@ struct MonthCalendarView: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
                 ForEach(tasks.filter { !$0.isStopped }, id: \.id) { task in
-                    HStack(spacing: 6) {
-                        if marksMode == .missed {
-                            Circle()
-                                .strokeBorder(Color(hex: task.colorHex), lineWidth: 1.5)
-                                .frame(width: 8, height: 8)
-                        } else {
-                            PatternedMark(hex: task.colorHex, pattern: task.markPatternKind, size: 8)
+                    let selected = focusedTaskIds.contains(task.id)
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.18)) {
+                            if selected {
+                                focusedTaskIds.remove(task.id)
+                            } else {
+                                focusedTaskIds.insert(task.id)
+                            }
                         }
-                        Text(task.name)
-                            .font(AppTypography.caption)
-                            .lineLimit(1)
+                    } label: {
+                        HStack(spacing: 6) {
+                            if selected {
+                                Image(systemName: "checkmark")
+                                    .font(.system(size: 10, weight: .bold))
+                                    .foregroundStyle(Color(hex: task.colorHex))
+                            }
+                            if marksMode == .missed {
+                                Circle()
+                                    .strokeBorder(Color(hex: task.colorHex), lineWidth: 1.5)
+                                    .frame(width: 8, height: 8)
+                            } else {
+                                PatternedMark(hex: task.colorHex, pattern: task.markPatternKind, size: 8)
+                            }
+                            Text(task.name)
+                                .font(AppTypography.caption)
+                                .lineLimit(1)
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(Color(hex: task.colorHex).opacity(selected ? 0.28 : 0.16), in: Capsule())
+                        .overlay {
+                            Capsule().stroke(Color(hex: task.colorHex).opacity(selected ? 0.7 : 0.35), lineWidth: 1)
+                        }
                     }
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
-                    .background(Color(hex: task.colorHex).opacity(0.16), in: Capsule())
-                    .overlay {
-                        Capsule().stroke(Color(hex: task.colorHex).opacity(0.35), lineWidth: 1)
-                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(task.name)
+                    .accessibilityAddTraits(selected ? .isSelected : [])
                 }
             }
         }

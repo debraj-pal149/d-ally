@@ -12,6 +12,9 @@
          <TestableReference skipped = "NO">
             <BuildableReference BuildableIdentifier = "primary" BlueprintIdentifier = "068B1703559D446A93E1BD5A" BuildableName = "DAllyTests.xctest" BlueprintName = "DAllyTests" ReferencedContainer = "container:DAlly.xcodeproj"/>
          </TestableReference>
+         <TestableReference skipped = "NO">
+            <BuildableReference BuildableIdentifier = "primary" BlueprintIdentifier = "C1A100000000000000000004" BuildableName = "DAllyUITests.xctest" BlueprintName = "DAllyUITests" ReferencedContainer = "container:DAlly.xcodeproj"/>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction buildConfiguration = "Debug" selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB" selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB" launchStyle = "0" useCustomWorkingDirectory = "NO" ignoresPersistentStateOnLaunch = "NO" debugDocumentVersioning = "YES" debugServiceExtension = "internal" allowLocationSimulation = "YES">

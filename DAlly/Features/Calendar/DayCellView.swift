@@ -54,6 +54,15 @@ struct DayCellView: View {
                     lineWidth: isToday ? 1.5 : 1
                 )
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityIdentifier("day-\(day.localDayKey)")
+        .accessibilityLabel(day.localDayKey)
+        .accessibilityValue(accessibilityMarks)
+    }
+
+    private var accessibilityMarks: String {
+        if marks.skipOnly { return "skip" }
+        return marks.dots.map(\.hex).joined(separator: ",")
     }
 
     @ViewBuilder

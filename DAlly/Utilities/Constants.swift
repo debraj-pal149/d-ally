@@ -84,6 +84,7 @@ enum AppCopy {
     static let calendarLegendMissed = "Color = missed. Blank = kept, skipped, or none."
     static let calendarModeKept = "Kept"
     static let calendarModeMissed = "Missed"
+    static let calendarFocusHint = "Tap a habit to see your consistency."
     static let primingTitle = "Allow alerts?"
     static let primingBody = "You get a ping at the time you set."
     static let enableAlerts = "Allow"

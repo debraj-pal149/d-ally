@@ -27,6 +27,8 @@ struct MonthGridView: View {
     var tasks: [DailyTask]
     var logs: [TaskDayLog]
     var marksMode: CalendarMarksMode = .kept
+    /// Empty means every habit. Non-empty limits kept, skipped, and missed marks to these tasks.
+    var focusedTaskIds: Set<UUID> = []
     var onSelect: (Date) -> Void
 
     private var calendar: Calendar { Calendar.current }
@@ -103,6 +105,9 @@ struct MonthGridView: View {
         }
 
         let byId = Dictionary(uniqueKeysWithValues: tasks.map { ($0.id, $0) })
+        func included(_ task: DailyTask) -> Bool {
+            focusedTaskIds.isEmpty || focusedTaskIds.contains(task.id)
+        }
 
         switch marksMode {
         case .kept:
@@ -111,14 +116,16 @@ struct MonthGridView: View {
             let kept = dayLogs.filter { $0.dayLogStatus == .kept }
             let skipped = dayLogs.filter { $0.dayLogStatus == .skipped }
             let keptTasks = kept.compactMap { byId[$0.taskId] }
+                .filter(included)
                 .sorted { a, b in
                     let da = a.dueDate(on: day)
                     let db = b.dueDate(on: day)
                     if da != db { return da < db }
                     return a.name < b.name
                 }
+            let skippedFocused = skipped.compactMap { byId[$0.taskId] }.filter(included)
             let dots = keptTasks.map { MarkDot(hex: $0.colorHex, pattern: $0.markPatternKind) }
-            return DayMarks(dots: dots, skipOnly: dots.isEmpty && !skipped.isEmpty)
+            return DayMarks(dots: dots, skipOnly: dots.isEmpty && !skippedFocused.isEmpty)
 
         case .missed:
             // Missed only applies to past days (open logs after the day ended).
@@ -126,7 +133,9 @@ struct MonthGridView: View {
                 return DayMarks(dots: [], skipOnly: false)
             }
             let active = TaskOccurrenceService.tasks(for: day, allTasks: tasks)
-            let missed = active.filter { DayLogService.status(taskId: $0.id, day: day, logs: logs) == nil }
+            let missed = active.filter {
+                included($0) && DayLogService.status(taskId: $0.id, day: day, logs: logs) == nil
+            }
                 .sorted { a, b in
                     let da = a.dueDate(on: day)
                     let db = b.dueDate(on: day)

@@ -83,10 +83,18 @@
 		E9052F4511F6E36568372AB6 /* WeekReviewBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF739925F8C926773D9E2E6E /* WeekReviewBanner.swift */; };
 		E0A545BFF16DE2D2653086CC /* RepeatKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C2BFB03FBB600F92C79A3C7 /* RepeatKind.swift */; };
 		9861C4F470648BF734CEA632 /* RepeatPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00D4BFDFA331FDFEF0CF2D /* RepeatPicker.swift */; };
+		C1A100000000000000000007 /* CalendarFocusUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A100000000000000000001 /* CalendarFocusUITests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
 		431387EB7262E1CFC79B125E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 46F86FAA6BBF9AC94A7E4595 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3CF92D32E5C5A22CDC3CB9A1;
+			remoteInfo = DAlly;
+		};
+		C1A10000000000000000000C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 46F86FAA6BBF9AC94A7E4595 /* Project object */;
 			proxyType = 1;
@@ -175,6 +183,8 @@
 		CF739925F8C926773D9E2E6E /* WeekReviewBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekReviewBanner.swift; sourceTree = "<group>"; };
 		5C2BFB03FBB600F92C79A3C7 /* RepeatKind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepeatKind.swift; sourceTree = "<group>"; };
 		CD00D4BFDFA331FDFEF0CF2D /* RepeatPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepeatPicker.swift; sourceTree = "<group>"; };
+		C1A100000000000000000001 /* CalendarFocusUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarFocusUITests.swift; sourceTree = "<group>"; };
+		C1A100000000000000000002 /* DAllyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DAllyUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -186,6 +196,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		2A252C91829222BB8DD6836B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C1A100000000000000000006 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -257,6 +274,7 @@
 			children = (
 				571CD3829D85311D5626CD79 /* DAlly.app */,
 				8BE28B02FB479D82E8077889 /* DAllyTests.xctest */,
+				C1A100000000000000000002 /* DAllyUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -325,11 +343,20 @@
 			path = DAllyTests;
 			sourceTree = "<group>";
 		};
+		C1A100000000000000000003 /* DAllyUITests */ = {
+			isa = PBXGroup;
+			children = (
+				C1A100000000000000000001 /* CalendarFocusUITests.swift */,
+			);
+			path = DAllyUITests;
+			sourceTree = "<group>";
+		};
 		A45C494344EA780B34B0A189 = {
 			isa = PBXGroup;
 			children = (
 				01393656DDC259C447271C58 /* DAlly */,
 				9A71C9E30AB01E562B0C5D18 /* DAllyTests */,
+				C1A100000000000000000003 /* DAllyUITests */,
 				2F0DD196A61CB4F095765836 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -444,6 +471,23 @@
 			productReference = 8BE28B02FB479D82E8077889 /* DAllyTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		C1A100000000000000000004 /* DAllyUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C1A100000000000000000008 /* Build configuration list for PBXNativeTarget "DAllyUITests" */;
+			buildPhases = (
+				C1A100000000000000000005 /* Sources */,
+				C1A100000000000000000006 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				C1A10000000000000000000B /* PBXTargetDependency */,
+			);
+			name = DAllyUITests;
+			productName = DAllyUITests;
+			productReference = C1A100000000000000000002 /* DAllyUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		3CF92D32E5C5A22CDC3CB9A1 /* DAlly */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 05D8A5BD68B1E1CB3B94934D /* Build configuration list for PBXNativeTarget "DAlly" */;
@@ -486,6 +530,7 @@
 			targets = (
 				3CF92D32E5C5A22CDC3CB9A1 /* DAlly */,
 				068B1703559D446A93E1BD5A /* DAllyTests */,
+				C1A100000000000000000004 /* DAllyUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -591,6 +636,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C1A100000000000000000005 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C1A100000000000000000007 /* CalendarFocusUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -598,6 +651,11 @@
 			isa = PBXTargetDependency;
 			target = 3CF92D32E5C5A22CDC3CB9A1 /* DAlly */;
 			targetProxy = 431387EB7262E1CFC79B125E /* PBXContainerItemProxy */;
+		};
+		C1A10000000000000000000B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3CF92D32E5C5A22CDC3CB9A1 /* DAlly */;
+			targetProxy = C1A10000000000000000000C /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -724,6 +782,38 @@
 			};
 			name = Debug;
 		};
+		C1A100000000000000000009 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dally.app.uitests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_TARGET_NAME = DAlly;
+			};
+			name = Debug;
+		};
+		C1A10000000000000000000A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dally.app.uitests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_TARGET_NAME = DAlly;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -741,6 +831,15 @@
 			buildConfigurations = (
 				E694EFEFB05890E6DE6198C2 /* Debug */,
 				7AB419346EE880C12E98CA20 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C1A100000000000000000008 /* Build configuration list for PBXNativeTarget "DAllyUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C1A100000000000000000009 /* Debug */,
+				C1A10000000000000000000A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
