@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct WelcomeView: View {
-    @AppStorage(AppStorageKey.hasCompletedOnboarding) private var hasCompletedOnboarding = false
+    @AppStorage(AppStorageKey.welcomeSeen) private var welcomeSeen = false
 
     var body: some View {
         ZStack {
@@ -74,6 +74,6 @@ struct WelcomeView: View {
     }
 
     private func begin() {
-        hasCompletedOnboarding = true
+        welcomeSeen = true
     }
 }

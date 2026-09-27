@@ -74,6 +74,8 @@ final class DeepLinkRouter {
             openCalendar()
         case "settings":
             selectedTab = .settings
+        case "profile":
+            selectedTab = .profile
         case "editor":
             selectedTab = .day
             openEditor(taskId: nil)

@@ -166,6 +166,12 @@ struct CompletionPromptSheet: View {
                     .foregroundStyle(AppColors.textPrimary(scheme))
                     .lineLimit(2)
 
+                if let line = MonthConsistency.count(task: task, logs: logs, viewing: day).line {
+                    Text(line)
+                        .font(AppTypography.caption)
+                        .foregroundStyle(AppColors.textTertiary(scheme))
+                }
+
                 HStack(spacing: 6) {
                     if !isToday {
                         Text(TimeDisplay.weekdayMonthDay(day))

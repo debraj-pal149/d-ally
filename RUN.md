@@ -24,7 +24,7 @@ See **[README.md](README.md)** for product overview, notifications, and deep lin
 ## Optional Simulator seed
 
 ```bash
-xcrun simctl spawn booted defaults write com.dally.app hasCompletedOnboarding -bool true
-xcrun simctl spawn booted defaults write com.dally.app seedPreviewData -bool true
-xcrun simctl launch booted com.dally.app
+xcrun simctl spawn booted defaults write com.debrajpal.dally hasCompletedOnboarding -bool true
+xcrun simctl spawn booted defaults write com.debrajpal.dally seedPreviewData -bool true
+xcrun simctl launch booted com.debrajpal.dally
 ```

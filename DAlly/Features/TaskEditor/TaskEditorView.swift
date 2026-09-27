@@ -210,10 +210,12 @@ struct TaskEditorView: View {
         task.endDate = untilStopped ? nil : endDate.startOfLocalDay
         task.overdueMode = overdueMode
         task.notificationsEnabled = notificationsEnabled
-        task.updatedAt = Date()
+        let now = Date()
+        task.updatedAt = now
         task.isStopped = false
         try? modelContext.save()
-        NotificationSchedulingService.shared.rescheduleFromStore(context: modelContext)
+        SyncRecorder.habitChanged(task.id, at: now, in: modelContext)
+        DayLogService.refreshAfterChange(context: modelContext)
         dismiss()
 
         if isCreate {
@@ -229,19 +231,23 @@ struct TaskEditorView: View {
     private func deleteTask() {
         guard let task = existing else { return }
         Haptics.delete()
-        DayLogService.deleteLogs(for: task.id, in: modelContext)
+        let id = task.id
+        DayLogService.deleteLogs(for: id, in: modelContext)
         modelContext.delete(task)
         try? modelContext.save()
-        NotificationSchedulingService.shared.rescheduleFromStore(context: modelContext)
+        SyncRecorder.habitDeleted(id, in: modelContext)
+        DayLogService.refreshAfterChange(context: modelContext)
         dismiss()
     }
 
     private func stopTask() {
         guard let task = existing else { return }
+        let now = Date()
         task.isStopped = true
-        task.updatedAt = Date()
+        task.updatedAt = now
         try? modelContext.save()
-        NotificationSchedulingService.shared.rescheduleFromStore(context: modelContext)
+        SyncRecorder.habitChanged(task.id, at: now, in: modelContext)
+        DayLogService.refreshAfterChange(context: modelContext)
         Haptics.delete()
         dismiss()
     }

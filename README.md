@@ -54,6 +54,7 @@ Scheme: `dally`
 
 - `dally://day?date=yyyy-MM-dd&taskId=<UUID>&prompt=1` — day + optional completion sheet  
 - `dally://calendar` — Calendar tab (current month)  
+- `dally://profile` — Profile  
 - `dally://settings` — Settings  
 - `dally://editor` — new reminder editor  
 
@@ -61,20 +62,28 @@ Scheme: `dally`
 
 ```
 DAlly/                 App sources (SwiftUI + SwiftData)
+DAlly/Sync/            Firebase sign-in + profile sync
+DAlly/WidgetSupport/   Shared store, intents, widget data
+DAllyWidget/           Home / Lock Screen widget
 DAlly.xcodeproj/       Xcode project
 DAllyTests/            Unit tests
+DAllyUITests/          UI tests
+firestore.rules        Firestore security rules (paste into the console)
 icons/                 Logo / icon explorations
 screenshots/           Capture references
 D-ALLY_BUILD_PLAN.md   Original build spec
 RUN.md                 Short run checklist
 ```
 
-Bundle ID: `com.dally.app` · Display name: **d·ally**
+Bundle ID: `com.debrajpal.dally` · App Group: `group.com.debrajpal.dally` · Display name: **d·ally**
 
-## Data
+## Data and profiles
 
-- SwiftData on-device only (no account / iCloud in v1).
+- SwiftData on-device store in the App Group, shared with the widget. The phone is the source of truth.
 - Day logs are **per day**: keeping a task yesterday does not keep it today.
+- **Profiles** (Google or Apple sign-in through Firebase) sync habits and day logs to Firestore under `users/{uid}`. Guest mode keeps everything local.
+- Signing in with existing local data **merges**: union of records, latest `updatedAt` wins, deletions travel as tombstones, and the store is snapshotted to `Application Support/Backups` first.
+- Firebase config lives in `DAlly/GoogleService-Info.plist` (not committed). Download it from the Firebase console for the `d-ally` project.
 
 ## Tests
 
@@ -86,9 +95,9 @@ xcodebuild -project DAlly.xcodeproj -scheme DAlly \
 ## Optional Simulator seed
 
 ```bash
-xcrun simctl spawn booted defaults write com.dally.app hasCompletedOnboarding -bool true
-xcrun simctl spawn booted defaults write com.dally.app seedPreviewData -bool true
-xcrun simctl launch booted com.dally.app
+xcrun simctl spawn booted defaults write com.debrajpal.dally hasCompletedOnboarding -bool true
+xcrun simctl spawn booted defaults write com.debrajpal.dally seedPreviewData -bool true
+xcrun simctl launch booted com.debrajpal.dally
 ```
 
 ## License

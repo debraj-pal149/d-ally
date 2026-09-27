@@ -1,5 +1,5 @@
 import Foundation
 
 enum AppTab: Hashable {
-    case day, calendar, settings
+    case day, calendar, profile, settings
 }

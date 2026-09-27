@@ -21,7 +21,7 @@ final class NotificationSchedulingService {
     }
 
     func rescheduleAll(tasks: [DailyTask], logs: [TaskDayLog], now: Date = Date()) async {
-        let masterOn = UserDefaults.standard.object(forKey: AppStorageKey.notificationsMasterEnabled) as? Bool ?? true
+        let masterOn = SharedSettings.defaults.object(forKey: AppStorageKey.notificationsMasterEnabled) as? Bool ?? true
         let settings = await UNUserNotificationCenter.current().notificationSettings()
         let authorized = settings.authorizationStatus == .authorized || settings.authorizationStatus == .provisional
 
@@ -43,16 +43,23 @@ final class NotificationSchedulingService {
         }
 
         desired.sort { $0.fire < $1.fire }
-        // Leave room for the weekly review ping (always scheduled separately).
+        // Leave one slot for the weekly review ping.
         if desired.count > 63 {
             desired = Array(desired.prefix(63))
         }
 
-        UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+        let center = UNUserNotificationCenter.current()
+        var keep = Set(desired.map(\.identifier))
+        keep.insert(NotificationIDs.weeklyReview)
+        let pending = await center.pendingNotificationRequests()
+        let stale = pending.map(\.identifier).filter { !keep.contains($0) }
+        if !stale.isEmpty {
+            center.removePendingNotificationRequests(withIdentifiers: stale)
+        }
         for item in desired {
             await add(item)
         }
-        await scheduleWeeklyReview(now: now)
+        await scheduleWeeklyReview()
     }
 
     func scheduleKeepReminding(task: DailyTask, day: Date, from now: Date = Date()) async {
@@ -142,8 +149,14 @@ final class NotificationSchedulingService {
         return cal.date(bySettingHour: 12, minute: 0, second: 0, of: sunday)
     }
 
-    private func scheduleWeeklyReview(now: Date) async {
-        guard let fire = Self.nextSundayNoon(after: now), fire > now else { return }
+    /// Repeats every Sunday at 12:00 local. A one-shot date was wiped whenever the app rescheduled.
+    private func scheduleWeeklyReview() async {
+        var comps = DateComponents()
+        comps.calendar = Calendar.current
+        comps.timeZone = TimeZone.current
+        comps.weekday = Calendar.sundayWeekday
+        comps.hour = 12
+        comps.minute = 0
         let content = UNMutableNotificationContent()
         content.title = AppCopy.weekReviewNotifTitle
         content.body = AppCopy.weekReviewNotifBody
@@ -154,8 +167,7 @@ final class NotificationSchedulingService {
             "url": "dally://calendar",
             "kind": "weeklyReview"
         ]
-        let comps = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: fire)
-        let trigger = UNCalendarNotificationTrigger(dateMatching: comps, repeats: false)
+        let trigger = UNCalendarNotificationTrigger(dateMatching: comps, repeats: true)
         let request = UNNotificationRequest(
             identifier: NotificationIDs.weeklyReview,
             content: content,

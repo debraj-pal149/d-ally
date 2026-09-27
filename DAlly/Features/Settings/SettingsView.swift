@@ -7,6 +7,7 @@ struct SettingsView: View {
     @AppStorage(AppStorageKey.notificationsMasterEnabled) private var masterEnabled = AppDefaults.notificationsMasterEnabled
     @AppStorage(AppStorageKey.defaultOverdueMode) private var defaultOverdue = AppDefaults.defaultOverdueMode
     @AppStorage(AppStorageKey.hasCompletedOnboarding) private var hasCompletedOnboarding = false
+    @AppStorage(AppStorageKey.welcomeSeen) private var welcomeSeen = false
     @Environment(\.modelContext) private var modelContext
     @Environment(\.colorScheme) private var scheme
     @State private var authState: NotificationAuthState = .notDetermined
@@ -85,6 +86,7 @@ struct SettingsView: View {
 
                     Section("Data") {
                         Button("Show welcome again") {
+                            welcomeSeen = false
                             hasCompletedOnboarding = false
                         }
                     }

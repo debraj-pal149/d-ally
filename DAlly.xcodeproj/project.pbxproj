@@ -84,6 +84,55 @@
 		E0A545BFF16DE2D2653086CC /* RepeatKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C2BFB03FBB600F92C79A3C7 /* RepeatKind.swift */; };
 		9861C4F470648BF734CEA632 /* RepeatPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00D4BFDFA331FDFEF0CF2D /* RepeatPicker.swift */; };
 		C1A100000000000000000007 /* CalendarFocusUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A100000000000000000001 /* CalendarFocusUITests.swift */; };
+		B50000000000000000000001 /* SyncOutbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50000000000000000000001 /* SyncOutbox.swift */; };
+		B50000000000000000000002 /* SyncRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50000000000000000000002 /* SyncRecorder.swift */; };
+		B50000000000000000000003 /* CloudCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50000000000000000000003 /* CloudCodec.swift */; };
+		B50000000000000000000004 /* SyncEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50000000000000000000004 /* SyncEngine.swift */; };
+		B50000000000000000000005 /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50000000000000000000005 /* AuthService.swift */; };
+		B50000000000000000000006 /* AppleSignInCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50000000000000000000006 /* AppleSignInCoordinator.swift */; };
+		B50000000000000000000007 /* HistoryExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50000000000000000000007 /* HistoryExport.swift */; };
+		B50000000000000000000008 /* ProfileSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50000000000000000000008 /* ProfileSetupView.swift */; };
+		B50000000000000000000009 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50000000000000000000009 /* ProfileView.swift */; };
+		B5000000000000000000000A /* MergeProgressSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5000000000000000000000A /* MergeProgressSheet.swift */; };
+		B5000000000000000000000B /* SignInButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5000000000000000000000B /* SignInButtons.swift */; };
+		B5000000000000000000000C /* SharedSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5000000000000000000000C /* SharedSettings.swift */; };
+		B5000000000000000000000D /* StoreContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5000000000000000000000D /* StoreContainer.swift */; };
+		B5000000000000000000000E /* MonthConsistency.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5000000000000000000000E /* MonthConsistency.swift */; };
+		B5000000000000000000000F /* TodaySnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5000000000000000000000F /* TodaySnapshot.swift */; };
+		B50000000000000000000010 /* HabitIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50000000000000000000010 /* HabitIntents.swift */; };
+		B50000000000000000000011 /* DAllyShortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50000000000000000000011 /* DAllyShortcuts.swift */; };
+		B50000000000000000000013 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = F50000000000000000000013 /* GoogleService-Info.plist */; };
+		W50000000000000000000001 /* DailyTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA29E78C791887167A5FBD7F /* DailyTask.swift */; };
+		W50000000000000000000002 /* TaskDayLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 063FC3AE781B5FE2C3585CFD /* TaskDayLog.swift */; };
+		W50000000000000000000003 /* DayLogStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD43B509DC5789E577816BAD /* DayLogStatus.swift */; };
+		W50000000000000000000004 /* RepeatKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C2BFB03FBB600F92C79A3C7 /* RepeatKind.swift */; };
+		W50000000000000000000005 /* MarkPattern.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C3F169062A1C51EF736B9B1 /* MarkPattern.swift */; };
+		W50000000000000000000006 /* ScheduleKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71307D626BE27E3DCCA84C6D /* ScheduleKind.swift */; };
+		W50000000000000000000007 /* PriorityLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC5F58D47898DE75E4386687 /* PriorityLevel.swift */; };
+		W50000000000000000000008 /* OverdueReminderMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFD39DC5A4C5E2B17B7F23AD /* OverdueReminderMode.swift */; };
+		W50000000000000000000009 /* AppearanceMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4FACA9880EA231365D6720D /* AppearanceMode.swift */; };
+		W5000000000000000000000A /* QuietHours.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E1063325E8AE915C517C446 /* QuietHours.swift */; };
+		W5000000000000000000000B /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BB51DD80C08F46CF811253F /* Constants.swift */; };
+		W5000000000000000000000C /* Date+LocalDay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67FC4DC9F49EA156E498860A /* Date+LocalDay.swift */; };
+		W5000000000000000000000D /* DateComponents+TimeOfDay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00DF89C48CE65A9D3F326115 /* DateComponents+TimeOfDay.swift */; };
+		W5000000000000000000000E /* String+HexColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA99C9B3890A9BC222111C6A /* String+HexColor.swift */; };
+		W5000000000000000000000F /* DayLogService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22B567F3CB8809302114C393 /* DayLogService.swift */; };
+		W50000000000000000000010 /* TaskOccurrenceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F69D666107838D19BE06F7D0 /* TaskOccurrenceService.swift */; };
+		W50000000000000000000011 /* NotificationSchedulingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DBAF7FB4CFF78C1982D8F39 /* NotificationSchedulingService.swift */; };
+		W50000000000000000000012 /* QuietHoursService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A3BAFDB21B446A98B355409 /* QuietHoursService.swift */; };
+		W50000000000000000000013 /* SharedSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5000000000000000000000C /* SharedSettings.swift */; };
+		W50000000000000000000014 /* StoreContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5000000000000000000000D /* StoreContainer.swift */; };
+		W50000000000000000000015 /* MonthConsistency.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5000000000000000000000E /* MonthConsistency.swift */; };
+		W50000000000000000000016 /* TodaySnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5000000000000000000000F /* TodaySnapshot.swift */; };
+		W50000000000000000000017 /* HabitIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50000000000000000000010 /* HabitIntents.swift */; };
+		W50000000000000000000018 /* SyncOutbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50000000000000000000001 /* SyncOutbox.swift */; };
+		W50000000000000000000019 /* SyncRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50000000000000000000002 /* SyncRecorder.swift */; };
+		W5000000000000000000001A /* DAllyWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50000000000000000000014 /* DAllyWidgetBundle.swift */; };
+		W5000000000000000000001B /* TodayWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50000000000000000000015 /* TodayWidget.swift */; };
+		W1D6E7000000000000000009 /* DAllyWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = F50000000000000000000018 /* DAllyWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		P50000000000000000000021 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = P50000000000000000000011 /* FirebaseAuth */; };
+		P50000000000000000000022 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = P50000000000000000000012 /* FirebaseFirestore */; };
+		P50000000000000000000023 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = P50000000000000000000013 /* GoogleSignIn */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -101,7 +150,28 @@
 			remoteGlobalIDString = 3CF92D32E5C5A22CDC3CB9A1;
 			remoteInfo = DAlly;
 		};
+		W1D6E700000000000000000E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 46F86FAA6BBF9AC94A7E4595 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = W1D6E7000000000000000001;
+			remoteInfo = DAllyWidget;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		W1D6E7000000000000000008 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				W1D6E7000000000000000009 /* DAllyWidget.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		D1697AB63C70D4C5DD96FA20 /* Sora-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sora-Regular.ttf; sourceTree = "<group>"; };
@@ -185,10 +255,44 @@
 		CD00D4BFDFA331FDFEF0CF2D /* RepeatPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepeatPicker.swift; sourceTree = "<group>"; };
 		C1A100000000000000000001 /* CalendarFocusUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarFocusUITests.swift; sourceTree = "<group>"; };
 		C1A100000000000000000002 /* DAllyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DAllyUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		F50000000000000000000001 /* SyncOutbox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncOutbox.swift; sourceTree = "<group>"; };
+		F50000000000000000000002 /* SyncRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncRecorder.swift; sourceTree = "<group>"; };
+		F50000000000000000000003 /* CloudCodec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudCodec.swift; sourceTree = "<group>"; };
+		F50000000000000000000004 /* SyncEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncEngine.swift; sourceTree = "<group>"; };
+		F50000000000000000000005 /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
+		F50000000000000000000006 /* AppleSignInCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleSignInCoordinator.swift; sourceTree = "<group>"; };
+		F50000000000000000000007 /* HistoryExport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryExport.swift; sourceTree = "<group>"; };
+		F50000000000000000000008 /* ProfileSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSetupView.swift; sourceTree = "<group>"; };
+		F50000000000000000000009 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
+		F5000000000000000000000A /* MergeProgressSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MergeProgressSheet.swift; sourceTree = "<group>"; };
+		F5000000000000000000000B /* SignInButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInButtons.swift; sourceTree = "<group>"; };
+		F5000000000000000000000C /* SharedSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedSettings.swift; sourceTree = "<group>"; };
+		F5000000000000000000000D /* StoreContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreContainer.swift; sourceTree = "<group>"; };
+		F5000000000000000000000E /* MonthConsistency.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthConsistency.swift; sourceTree = "<group>"; };
+		F5000000000000000000000F /* TodaySnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodaySnapshot.swift; sourceTree = "<group>"; };
+		F50000000000000000000010 /* HabitIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitIntents.swift; sourceTree = "<group>"; };
+		F50000000000000000000011 /* DAllyShortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DAllyShortcuts.swift; sourceTree = "<group>"; };
+		F50000000000000000000012 /* DAlly.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DAlly.entitlements; sourceTree = "<group>"; };
+		F50000000000000000000013 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		F50000000000000000000014 /* DAllyWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DAllyWidgetBundle.swift; sourceTree = "<group>"; };
+		F50000000000000000000015 /* TodayWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayWidget.swift; sourceTree = "<group>"; };
+		F50000000000000000000016 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		F50000000000000000000017 /* DAllyWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DAllyWidget.entitlements; sourceTree = "<group>"; };
+		F50000000000000000000018 /* DAllyWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = DAllyWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		09A82846EB709A06A7813A7E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				P50000000000000000000021 /* FirebaseAuth in Frameworks */,
+				P50000000000000000000022 /* FirebaseFirestore in Frameworks */,
+				P50000000000000000000023 /* GoogleSignIn in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		W1D6E7000000000000000007 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -223,13 +327,66 @@
 				FA6578E080FA9C1029E7EC5A /* Theme */,
 				6D607A6CDD7BFF40D169C026 /* Utilities */,
 				678D36890D3E4766E9D13966 /* Resources */,
+				F50000000000000000000030 /* Sync */,
+				F50000000000000000000031 /* WidgetSupport */,
 				2D61D16002EA534878F1FA5E /* AppDelegate.swift */,
 				1304132A91D63453B89D66BC /* ContentRootView.swift */,
 				8A6FCD3CC8A04DF3AB37827A /* DAllyApp.swift */,
 				F3986DA212CC88011E2F3D2B /* Assets.xcassets */,
 				AFC18D12308D4797457EA4D0 /* Info.plist */,
+				F50000000000000000000012 /* DAlly.entitlements */,
+				F50000000000000000000013 /* GoogleService-Info.plist */,
 			);
 			path = DAlly;
+			sourceTree = "<group>";
+		};
+		F50000000000000000000030 /* Sync */ = {
+			isa = PBXGroup;
+			children = (
+				F50000000000000000000001 /* SyncOutbox.swift */,
+				F50000000000000000000002 /* SyncRecorder.swift */,
+				F50000000000000000000003 /* CloudCodec.swift */,
+				F50000000000000000000004 /* SyncEngine.swift */,
+				F50000000000000000000005 /* AuthService.swift */,
+				F50000000000000000000006 /* AppleSignInCoordinator.swift */,
+				F50000000000000000000007 /* HistoryExport.swift */,
+			);
+			path = Sync;
+			sourceTree = "<group>";
+		};
+		F50000000000000000000031 /* WidgetSupport */ = {
+			isa = PBXGroup;
+			children = (
+				F5000000000000000000000C /* SharedSettings.swift */,
+				F5000000000000000000000D /* StoreContainer.swift */,
+				F5000000000000000000000E /* MonthConsistency.swift */,
+				F5000000000000000000000F /* TodaySnapshot.swift */,
+				F50000000000000000000010 /* HabitIntents.swift */,
+				F50000000000000000000011 /* DAllyShortcuts.swift */,
+			);
+			path = WidgetSupport;
+			sourceTree = "<group>";
+		};
+		F50000000000000000000032 /* Profile */ = {
+			isa = PBXGroup;
+			children = (
+				F50000000000000000000008 /* ProfileSetupView.swift */,
+				F50000000000000000000009 /* ProfileView.swift */,
+				F5000000000000000000000A /* MergeProgressSheet.swift */,
+				F5000000000000000000000B /* SignInButtons.swift */,
+			);
+			path = Profile;
+			sourceTree = "<group>";
+		};
+		F50000000000000000000033 /* DAllyWidget */ = {
+			isa = PBXGroup;
+			children = (
+				F50000000000000000000014 /* DAllyWidgetBundle.swift */,
+				F50000000000000000000015 /* TodayWidget.swift */,
+				F50000000000000000000016 /* Info.plist */,
+				F50000000000000000000017 /* DAllyWidget.entitlements */,
+			);
+			path = DAllyWidget;
 			sourceTree = "<group>";
 		};
 		678D36890D3E4766E9D13966 /* Resources */ = {
@@ -275,6 +432,7 @@
 				571CD3829D85311D5626CD79 /* DAlly.app */,
 				8BE28B02FB479D82E8077889 /* DAllyTests.xctest */,
 				C1A100000000000000000002 /* DAllyUITests.xctest */,
+				F50000000000000000000018 /* DAllyWidget.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -355,6 +513,7 @@
 			isa = PBXGroup;
 			children = (
 				01393656DDC259C447271C58 /* DAlly */,
+				F50000000000000000000033 /* DAllyWidget */,
 				9A71C9E30AB01E562B0C5D18 /* DAllyTests */,
 				C1A100000000000000000003 /* DAllyUITests */,
 				2F0DD196A61CB4F095765836 /* Products */,
@@ -390,6 +549,7 @@
 				876A5B6F185B30DC127115A2 /* Calendar */,
 				19CA7C255CD248AAC7D2881A /* Day */,
 				C6F9BE5E3D1986D7F51419D0 /* Onboarding */,
+				F50000000000000000000032 /* Profile */,
 				39964EBAE4EC3BD7851E8ABD /* Settings */,
 				B185EA472A5AA136076EDCA9 /* Shared */,
 				FABAF1C65A94A0D97F0034F2 /* TaskEditor */,
@@ -495,15 +655,38 @@
 				838248CAA0E23712048A3C4E /* Sources */,
 				09A82846EB709A06A7813A7E /* Frameworks */,
 				B38B8EFCFFAEB0E290034F10 /* Resources */,
+				W1D6E7000000000000000008 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				W1D6E700000000000000000D /* PBXTargetDependency */,
+			);
+			name = DAlly;
+			packageProductDependencies = (
+				P50000000000000000000011 /* FirebaseAuth */,
+				P50000000000000000000012 /* FirebaseFirestore */,
+				P50000000000000000000013 /* GoogleSignIn */,
+			);
+			productName = DAlly;
+			productReference = 571CD3829D85311D5626CD79 /* DAlly.app */;
+			productType = "com.apple.product-type.application";
+		};
+		W1D6E7000000000000000001 /* DAllyWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = W1D6E700000000000000000A /* Build configuration list for PBXNativeTarget "DAllyWidget" */;
+			buildPhases = (
+				W1D6E7000000000000000006 /* Sources */,
+				W1D6E7000000000000000007 /* Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
-			name = DAlly;
-			productName = DAlly;
-			productReference = 571CD3829D85311D5626CD79 /* DAlly.app */;
-			productType = "com.apple.product-type.application";
+			name = DAllyWidget;
+			productName = DAllyWidget;
+			productReference = F50000000000000000000018 /* DAllyWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -524,11 +707,16 @@
 				Base,
 			);
 			mainGroup = A45C494344EA780B34B0A189;
+			packageReferences = (
+				P50000000000000000000001 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				P50000000000000000000002 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
+			);
 			productRefGroup = 2F0DD196A61CB4F095765836 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				3CF92D32E5C5A22CDC3CB9A1 /* DAlly */,
+				W1D6E7000000000000000001 /* DAllyWidget */,
 				068B1703559D446A93E1BD5A /* DAllyTests */,
 				C1A100000000000000000004 /* DAllyUITests */,
 			);
@@ -549,6 +737,7 @@
 				BC74C238FAC74401208487CC /* Figtree-Medium.ttf in Resources */,
 				61353FD027246C087166E2C0 /* Figtree-SemiBold.ttf in Resources */,
 				F22AFF08F26B6E108B37AB66 /* Figtree-Bold.ttf in Resources */,
+				B50000000000000000000013 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -625,6 +814,57 @@
 				706652899EF0802486DD0C77 /* DateComponents+TimeOfDay.swift in Sources */,
 				7F03873378E42162A0738418 /* Haptics.swift in Sources */,
 				E31B8C120FA49697E2C1C0A0 /* String+HexColor.swift in Sources */,
+				B50000000000000000000001 /* SyncOutbox.swift in Sources */,
+				B50000000000000000000002 /* SyncRecorder.swift in Sources */,
+				B50000000000000000000003 /* CloudCodec.swift in Sources */,
+				B50000000000000000000004 /* SyncEngine.swift in Sources */,
+				B50000000000000000000005 /* AuthService.swift in Sources */,
+				B50000000000000000000006 /* AppleSignInCoordinator.swift in Sources */,
+				B50000000000000000000007 /* HistoryExport.swift in Sources */,
+				B50000000000000000000008 /* ProfileSetupView.swift in Sources */,
+				B50000000000000000000009 /* ProfileView.swift in Sources */,
+				B5000000000000000000000A /* MergeProgressSheet.swift in Sources */,
+				B5000000000000000000000B /* SignInButtons.swift in Sources */,
+				B5000000000000000000000C /* SharedSettings.swift in Sources */,
+				B5000000000000000000000D /* StoreContainer.swift in Sources */,
+				B5000000000000000000000E /* MonthConsistency.swift in Sources */,
+				B5000000000000000000000F /* TodaySnapshot.swift in Sources */,
+				B50000000000000000000010 /* HabitIntents.swift in Sources */,
+				B50000000000000000000011 /* DAllyShortcuts.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		W1D6E7000000000000000006 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				W50000000000000000000001 /* DailyTask.swift in Sources */,
+				W50000000000000000000002 /* TaskDayLog.swift in Sources */,
+				W50000000000000000000003 /* DayLogStatus.swift in Sources */,
+				W50000000000000000000004 /* RepeatKind.swift in Sources */,
+				W50000000000000000000005 /* MarkPattern.swift in Sources */,
+				W50000000000000000000006 /* ScheduleKind.swift in Sources */,
+				W50000000000000000000007 /* PriorityLevel.swift in Sources */,
+				W50000000000000000000008 /* OverdueReminderMode.swift in Sources */,
+				W50000000000000000000009 /* AppearanceMode.swift in Sources */,
+				W5000000000000000000000A /* QuietHours.swift in Sources */,
+				W5000000000000000000000B /* Constants.swift in Sources */,
+				W5000000000000000000000C /* Date+LocalDay.swift in Sources */,
+				W5000000000000000000000D /* DateComponents+TimeOfDay.swift in Sources */,
+				W5000000000000000000000E /* String+HexColor.swift in Sources */,
+				W5000000000000000000000F /* DayLogService.swift in Sources */,
+				W50000000000000000000010 /* TaskOccurrenceService.swift in Sources */,
+				W50000000000000000000011 /* NotificationSchedulingService.swift in Sources */,
+				W50000000000000000000012 /* QuietHoursService.swift in Sources */,
+				W50000000000000000000013 /* SharedSettings.swift in Sources */,
+				W50000000000000000000014 /* StoreContainer.swift in Sources */,
+				W50000000000000000000015 /* MonthConsistency.swift in Sources */,
+				W50000000000000000000016 /* TodaySnapshot.swift in Sources */,
+				W50000000000000000000017 /* HabitIntents.swift in Sources */,
+				W50000000000000000000018 /* SyncOutbox.swift in Sources */,
+				W50000000000000000000019 /* SyncRecorder.swift in Sources */,
+				W5000000000000000000001A /* DAllyWidgetBundle.swift in Sources */,
+				W5000000000000000000001B /* TodayWidget.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -657,6 +897,11 @@
 			target = 3CF92D32E5C5A22CDC3CB9A1 /* DAlly */;
 			targetProxy = C1A10000000000000000000C /* PBXContainerItemProxy */;
 		};
+		W1D6E700000000000000000D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = W1D6E7000000000000000001 /* DAllyWidget */;
+			targetProxy = W1D6E700000000000000000E /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
@@ -669,7 +914,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.dally.app.tests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.debrajpal.dally.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -704,6 +949,7 @@
 				ENABLE_TESTABILITY = YES;
 				GCC_NO_COMMON_BLOCKS = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -716,6 +962,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = DAlly/DAlly.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 5LV8BN8Q4Q;
@@ -728,7 +975,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.dally.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.debrajpal.dally;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -743,6 +990,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = DAlly/DAlly.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 5LV8BN8Q4Q;
@@ -755,7 +1003,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.dally.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.debrajpal.dally;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -774,7 +1022,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.dally.app.tests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.debrajpal.dally.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -790,7 +1038,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.dally.app.uitests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.debrajpal.dally.uitests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -806,11 +1054,69 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.dally.app.uitests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.debrajpal.dally.uitests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 				TEST_TARGET_NAME = DAlly;
+			};
+			name = Release;
+		};
+		W1D6E700000000000000000B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = DAllyWidget/DAllyWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5LV8BN8Q4Q;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = DAllyWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "d·ally";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.debrajpal.dally.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG WIDGET_EXTENSION $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		W1D6E700000000000000000C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = DAllyWidget/DAllyWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5LV8BN8Q4Q;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = DAllyWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "d·ally";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.debrajpal.dally.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "WIDGET_EXTENSION $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -853,7 +1159,53 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		W1D6E700000000000000000A /* Build configuration list for PBXNativeTarget "DAllyWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				W1D6E700000000000000000B /* Debug */,
+				W1D6E700000000000000000C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		P50000000000000000000001 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.0.0;
+			};
+		};
+		P50000000000000000000002 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		P50000000000000000000011 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = P50000000000000000000001 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		P50000000000000000000012 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = P50000000000000000000001 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+		P50000000000000000000013 /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = P50000000000000000000002 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 46F86FAA6BBF9AC94A7E4595 /* Project object */;
 }

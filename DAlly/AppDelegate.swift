@@ -1,25 +1,66 @@
+import BackgroundTasks
+import FirebaseCore
+import SwiftData
 import UIKit
 import UserNotifications
-import SwiftData
-import BackgroundTasks
+import WidgetKit
 
 final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
     func application(
         _ application: UIApplication,
         willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
+        FirebaseApp.configure()
         UNUserNotificationCenter.current().delegate = self
         registerCategories()
+        SharedSettings.mirrorFromAppDefaults()
+        observeWidgetReschedule()
         BGTaskScheduler.shared.register(forTaskWithIdentifier: NotificationIDs.bgRefresh, using: nil) { task in
             Self.handleRefresh(task as! BGAppRefreshTask)
         }
         return true
     }
 
+    func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
+    ) -> Bool {
+        Task { @MainActor in
+            AuthService.shared.configure()
+        }
+        return true
+    }
+
     func applicationDidBecomeActive(_ application: UIApplication) {
         scheduleBackgroundRefresh()
+        SharedSettings.mirrorFromAppDefaults()
         let context = ModelContext(Persistence.shared)
         NotificationSchedulingService.shared.rescheduleFromStore(context: context)
+        WidgetCenter.shared.reloadAllTimelines()
+        Task { @MainActor in
+            SyncEngine.shared.pushNow()
+        }
+    }
+
+    /// The widget writes to the shared store and pings here so alerts follow.
+    private func observeWidgetReschedule() {
+        let observer = Unmanaged.passUnretained(self).toOpaque()
+        CFNotificationCenterAddObserver(
+            CFNotificationCenterGetDarwinNotifyCenter(),
+            observer,
+            { _, _, _, _, _ in
+                DispatchQueue.main.async {
+                    let context = ModelContext(Persistence.shared)
+                    NotificationSchedulingService.shared.rescheduleFromStore(context: context)
+                    Task { @MainActor in
+                        SyncEngine.shared.pushNow()
+                    }
+                }
+            },
+            SharedSettings.rescheduleNotification,
+            nil,
+            .deliverImmediately
+        )
     }
 
     private func registerCategories() {
@@ -93,16 +134,4 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
 
 extension Notification.Name {
     static let dallyOpenURL = Notification.Name("dallyOpenURL")
-}
-
-enum Persistence {
-    static let shared: ModelContainer = {
-        let schema = Schema([DailyTask.self, TaskDayLog.self])
-        let config = ModelConfiguration("DAlly", schema: schema)
-        do {
-            return try ModelContainer(for: schema, configurations: [config])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-    }()
 }

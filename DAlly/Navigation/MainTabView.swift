@@ -19,6 +19,10 @@ struct MainTabView: View {
                 .tabItem { Label("Calendar", systemImage: "calendar") }
                 .tag(AppTab.calendar)
 
+            ProfileView()
+                .tabItem { Label("Profile", systemImage: "person.crop.circle") }
+                .tag(AppTab.profile)
+
             SettingsView()
                 .tabItem { Label("Settings", systemImage: "gearshape") }
                 .tag(AppTab.settings)

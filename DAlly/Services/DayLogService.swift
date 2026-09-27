@@ -1,5 +1,6 @@
 import Foundation
 import SwiftData
+import WidgetKit
 
 enum DayLogService {
     static func log(for taskId: UUID, day: Date, logs: [TaskDayLog]) -> TaskDayLog? {
@@ -20,18 +21,20 @@ enum DayLogService {
         in context: ModelContext
     ) -> TaskDayLog {
         let key = day.startOfLocalDay.localDayKey
-        let existing = fetchLog(taskId: taskId, dayKey: key, in: context)
-        if let existing {
+        let now = Date()
+        let row: TaskDayLog
+        if let existing = fetchLog(taskId: taskId, dayKey: key, in: context) {
             existing.dayLogStatus = status
             existing.resolvedAt = resolvedAt
-            try? context.save()
-            NotificationSchedulingService.shared.rescheduleFromStore(context: context)
-            return existing
+            existing.updatedAt = now
+            row = existing
+        } else {
+            row = TaskDayLog(taskId: taskId, dayKey: key, status: status, resolvedAt: resolvedAt, updatedAt: now)
+            context.insert(row)
         }
-        let row = TaskDayLog(taskId: taskId, dayKey: key, status: status, resolvedAt: resolvedAt)
-        context.insert(row)
         try? context.save()
-        NotificationSchedulingService.shared.rescheduleFromStore(context: context)
+        SyncRecorder.logChanged(taskId: taskId, dayKey: key, at: now, in: context)
+        refreshAfterChange(context: context)
         return row
     }
 
@@ -48,14 +51,18 @@ enum DayLogService {
         if let existing = fetchLog(taskId: taskId, dayKey: key, in: context) {
             context.delete(existing)
             try? context.save()
-            NotificationSchedulingService.shared.rescheduleFromStore(context: context)
+            SyncRecorder.logDeleted(taskId: taskId, dayKey: key, in: context)
+            refreshAfterChange(context: context)
         }
     }
 
     static func deleteLogs(for taskId: UUID, in context: ModelContext) {
         let all = (try? context.fetch(FetchDescriptor<TaskDayLog>())) ?? []
+        let now = Date()
         for log in all where log.taskId == taskId {
+            let dayKey = log.dayKey
             context.delete(log)
+            SyncRecorder.logDeleted(taskId: taskId, dayKey: dayKey, at: now, in: context)
         }
         try? context.save()
     }
@@ -67,5 +74,17 @@ enum DayLogService {
     static func fetchLog(taskId: UUID, dayKey: String, in context: ModelContext) -> TaskDayLog? {
         let all = (try? context.fetch(FetchDescriptor<TaskDayLog>())) ?? []
         return all.first { $0.taskId == taskId && $0.dayKey == dayKey }
+    }
+
+    /// Widgets and alerts follow every change. The widget process cannot touch the app's
+    /// notification center, so it asks the app to reschedule instead.
+    static func refreshAfterChange(context: ModelContext) {
+        WidgetCenter.shared.reloadAllTimelines()
+        if SharedSettings.isExtension {
+            SharedSettings.postReschedule()
+        } else {
+            SharedSettings.mirrorFromAppDefaults()
+            NotificationSchedulingService.shared.rescheduleFromStore(context: context)
+        }
     }
 }

@@ -260,3 +260,182 @@ final class SchedulingLogicTests: XCTestCase {
         XCTAssertFalse(QuietHoursService.isInQuietHours(at: overdue!.fire))
     }
 }
+
+final class SyncMergeTests: XCTestCase {
+    private let base = Date(timeIntervalSince1970: 1_800_000_000)
+
+    func testRemoteNewerWins() {
+        let decision = SyncMerge.decide(localUpdatedAt: base, localPendingAt: nil, remoteUpdatedAt: base.addingTimeInterval(5))
+        XCTAssertEqual(decision, .applyRemote)
+    }
+
+    func testLocalNewerKept() {
+        let decision = SyncMerge.decide(localUpdatedAt: base.addingTimeInterval(5), localPendingAt: nil, remoteUpdatedAt: base)
+        XCTAssertEqual(decision, .keepLocal)
+    }
+
+    func testTieKeepsLocal() {
+        XCTAssertEqual(SyncMerge.decide(localUpdatedAt: base, localPendingAt: nil, remoteUpdatedAt: base), .keepLocal)
+    }
+
+    func testPendingLocalChangeBlocksOlderRemote() {
+        let decision = SyncMerge.decide(
+            localUpdatedAt: base.addingTimeInterval(-100),
+            localPendingAt: base.addingTimeInterval(10),
+            remoteUpdatedAt: base
+        )
+        XCTAssertEqual(decision, .keepLocal)
+    }
+
+    func testNothingLocalTakesRemote() {
+        XCTAssertEqual(SyncMerge.decide(localUpdatedAt: nil, localPendingAt: nil, remoteUpdatedAt: base), .applyRemote)
+    }
+
+    func testPushWhenRemoteMissingOrOlder() {
+        XCTAssertTrue(SyncMerge.shouldPush(localChangedAt: base, remoteUpdatedAt: nil))
+        XCTAssertTrue(SyncMerge.shouldPush(localChangedAt: base, remoteUpdatedAt: base.addingTimeInterval(-1)))
+        XCTAssertTrue(SyncMerge.shouldPush(localChangedAt: base, remoteUpdatedAt: base))
+        XCTAssertFalse(SyncMerge.shouldPush(localChangedAt: base, remoteUpdatedAt: base.addingTimeInterval(1)))
+    }
+}
+
+final class CloudCodecTests: XCTestCase {
+    func testHabitRoundTrip() {
+        let start = Date().startOfLocalDay.addingLocalDays(-12)
+        let task = DailyTask(
+            name: "Gym",
+            notes: "Legs",
+            scheduleKind: .flexibleUntil,
+            hour: 18,
+            minute: 30,
+            windowEndHour: 21,
+            windowEndMinute: 0,
+            priority: .high,
+            colorHex: "#34C759",
+            startDate: start,
+            endDate: start.addingLocalDays(40),
+            repeatKind: .weekly,
+            weeklyWeekdaysMask: 0b0101010
+        )
+        let data = CloudCodec.habit(from: task)
+        let cloud = CloudCodec.decodeHabit(data)
+        XCTAssertNotNil(cloud)
+        let copy = CloudCodec.makeTask(from: cloud!)
+        XCTAssertEqual(copy.id, task.id)
+        XCTAssertEqual(copy.name, "Gym")
+        XCTAssertEqual(copy.notes, "Legs")
+        XCTAssertEqual(copy.schedule, .flexibleUntil)
+        XCTAssertEqual(copy.hour, 18)
+        XCTAssertEqual(copy.windowEndHour, 21)
+        XCTAssertEqual(copy.priorityLevel, .high)
+        XCTAssertEqual(copy.startDate, start)
+        XCTAssertEqual(copy.endDate, start.addingLocalDays(40))
+        XCTAssertEqual(copy.repeatCadence, .weekly)
+        XCTAssertEqual(copy.weeklyWeekdaysMask, 0b0101010)
+        XCTAssertEqual(copy.updatedAt, task.updatedAt)
+        XCTAssertNil(cloud?.deletedAt)
+    }
+
+    func testHabitTombstoneDecodes() {
+        let id = UUID()
+        let when = Date()
+        let cloud = CloudCodec.decodeHabit(CloudCodec.habitTombstone(id: id, deletedAt: when))
+        XCTAssertEqual(cloud?.id, id)
+        XCTAssertEqual(cloud?.deletedAt, when)
+        XCTAssertEqual(cloud?.updatedAt, when)
+    }
+
+    func testLogRoundTripAndKey() {
+        let taskId = UUID()
+        let log = TaskDayLog(taskId: taskId, dayKey: "2026-09-27", status: .skipped)
+        let cloud = CloudCodec.decodeLog(CloudCodec.log(from: log))
+        XCTAssertEqual(cloud?.taskId, taskId)
+        XCTAssertEqual(cloud?.dayKey, "2026-09-27")
+        XCTAssertEqual(cloud?.status, DayLogStatus.skipped.rawValue)
+        XCTAssertEqual(cloud?.updatedAt, log.updatedAt)
+
+        let key = SyncKeys.log(taskId: taskId, dayKey: "2026-09-27")
+        let parts = SyncKeys.splitLog(key)
+        XCTAssertEqual(parts?.taskId, taskId)
+        XCTAssertEqual(parts?.dayKey, "2026-09-27")
+    }
+}
+
+@MainActor
+final class SyncRecorderTests: XCTestCase {
+    private func makeContext() throws -> ModelContext {
+        let schema = Schema([DailyTask.self, TaskDayLog.self, SyncOutbox.self])
+        let config = ModelConfiguration(isStoredInMemoryOnly: true)
+        let container = try ModelContainer(for: schema, configurations: config)
+        return ModelContext(container)
+    }
+
+    func testMarkKeptQueuesOneChangePerDay() throws {
+        let context = try makeContext()
+        let task = DailyTask(name: "Pill", colorHex: "#007AFF")
+        context.insert(task)
+        try context.save()
+
+        let day = Date().startOfLocalDay
+        DayLogService.markKept(taskId: task.id, day: day, in: context)
+        DayLogService.markSkipped(taskId: task.id, day: day, in: context)
+
+        let pending = SyncRecorder.pending(in: context)
+        XCTAssertEqual(pending.count, 1)
+        XCTAssertEqual(pending.first?.recordKind, .log)
+        XCTAssertFalse(pending.first?.isTombstone ?? true)
+    }
+
+    func testClearLogQueuesTombstone() throws {
+        let context = try makeContext()
+        let task = DailyTask(name: "Pill", colorHex: "#007AFF")
+        context.insert(task)
+        try context.save()
+        let day = Date().startOfLocalDay
+        DayLogService.markKept(taskId: task.id, day: day, in: context)
+        DayLogService.clearLog(taskId: task.id, day: day, in: context)
+
+        let pending = SyncRecorder.pending(in: context)
+        XCTAssertEqual(pending.count, 1)
+        XCTAssertTrue(pending.first?.isTombstone ?? false)
+        XCTAssertEqual((try? context.fetch(FetchDescriptor<TaskDayLog>()))?.count, 0)
+    }
+
+    func testEnqueueAllIsIdempotent() throws {
+        let context = try makeContext()
+        let a = DailyTask(name: "A", colorHex: "#007AFF")
+        let b = DailyTask(name: "B", colorHex: "#34C759")
+        context.insert(a)
+        context.insert(b)
+        context.insert(TaskDayLog(taskId: a.id, dayKey: "2026-09-20", status: .kept))
+        try context.save()
+
+        SyncRecorder.enqueueAll(in: context)
+        SyncRecorder.enqueueAll(in: context)
+        XCTAssertEqual(SyncRecorder.pending(in: context).count, 3)
+    }
+}
+
+final class MonthConsistencyTests: XCTestCase {
+    func testCountsScheduledDaysThroughYesterdayAndTodayOnlyWhenResolved() {
+        let today = Date().startOfLocalDay
+        let calendar = Calendar.current
+        let monthStart = calendar.date(from: calendar.dateComponents([.year, .month], from: today))!
+        guard today > monthStart.addingLocalDays(2) else { return }
+
+        let task = DailyTask(name: "Pill", colorHex: "#007AFF", startDate: monthStart)
+        var logs: [TaskDayLog] = []
+        logs.append(TaskDayLog(taskId: task.id, dayKey: monthStart.localDayKey, status: .kept))
+        logs.append(TaskDayLog(taskId: task.id, dayKey: monthStart.addingLocalDays(1).localDayKey, status: .skipped))
+
+        let dayCount = calendar.dateComponents([.day], from: monthStart, to: today).day ?? 0
+        let open = MonthConsistency.count(task: task, logs: logs, viewing: today, now: today.addingTimeInterval(3600))
+        XCTAssertEqual(open.scheduled, dayCount)
+        XCTAssertEqual(open.kept, 1)
+
+        logs.append(TaskDayLog(taskId: task.id, dayKey: today.localDayKey, status: .kept))
+        let done = MonthConsistency.count(task: task, logs: logs, viewing: today, now: today.addingTimeInterval(3600))
+        XCTAssertEqual(done.scheduled, dayCount + 1)
+        XCTAssertEqual(done.kept, 2)
+    }
+}

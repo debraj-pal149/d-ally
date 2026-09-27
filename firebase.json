@@ -1,0 +1,8 @@
+{
+  "hosting": {
+    "site": "d-ally",
+    "public": "hosting",
+    "cleanUrls": true,
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"]
+  }
+}

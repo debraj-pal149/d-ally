@@ -131,10 +131,12 @@ struct DayView: View {
     }
 
     private func stop(_ task: DailyTask) {
+        let now = Date()
         task.isStopped = true
-        task.updatedAt = Date()
+        task.updatedAt = now
         try? modelContext.save()
-        NotificationSchedulingService.shared.rescheduleFromStore(context: modelContext)
+        SyncRecorder.habitChanged(task.id, at: now, in: modelContext)
+        DayLogService.refreshAfterChange(context: modelContext)
         Haptics.delete()
     }
 }

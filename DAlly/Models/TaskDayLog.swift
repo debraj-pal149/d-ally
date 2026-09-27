@@ -8,19 +8,22 @@ final class TaskDayLog {
     var dayKey: String
     var status: String
     var resolvedAt: Date
+    var updatedAt: Date = Date()
 
     init(
         id: UUID = UUID(),
         taskId: UUID,
         dayKey: String,
         status: DayLogStatus,
-        resolvedAt: Date = Date()
+        resolvedAt: Date = Date(),
+        updatedAt: Date? = nil
     ) {
         self.id = id
         self.taskId = taskId
         self.dayKey = dayKey
         self.status = status.rawValue
         self.resolvedAt = resolvedAt
+        self.updatedAt = updatedAt ?? resolvedAt
     }
 
     var dayLogStatus: DayLogStatus {

@@ -1,18 +1,24 @@
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct ContentRootView: View {
     @Environment(DeepLinkRouter.self) private var router
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
     @AppStorage(AppStorageKey.hasCompletedOnboarding) private var hasCompletedOnboarding = false
+    @AppStorage(AppStorageKey.welcomeSeen) private var welcomeSeen = false
     @AppStorage(AppStorageKey.appearanceMode) private var appearanceMode = AppDefaults.appearanceMode
+
+    private var auth: AuthService { AuthService.shared }
+    private var sync: SyncEngine { SyncEngine.shared }
 
     var body: some View {
         @Bindable var router = router
         Group {
             if hasCompletedOnboarding {
                 MainTabView()
+            } else if welcomeSeen {
+                ProfileSetupView()
             } else {
                 WelcomeView()
             }
@@ -27,7 +33,19 @@ struct ContentRootView: View {
         .sheet(isPresented: $router.showNotificationPriming) {
             NotificationPrimingView()
         }
-        .onOpenURL { router.apply(url: $0) }
+        .sheet(isPresented: mergeSheetShown) {
+            MergeProgressSheet()
+        }
+        .alert(AppCopy.profileMergeTitle, isPresented: mergeChoiceShown) {
+            Button(AppCopy.profileMergeAdd) { auth.resolveMergeChoice(addLocal: true) }
+            Button(AppCopy.profileMergeRemove, role: .destructive) { auth.resolveMergeChoice(addLocal: false) }
+        } message: {
+            Text(mergeChoiceMessage)
+        }
+        .onOpenURL { url in
+            if auth.handleOpenURL(url) { return }
+            router.apply(url: url)
+        }
         .onReceive(NotificationCenter.default.publisher(for: .dallyOpenURL)) { note in
             if let url = note.object as? URL {
                 router.apply(url: url)
@@ -50,6 +68,7 @@ struct ContentRootView: View {
                 switch tab {
                 case "calendar": router.selectedTab = .calendar
                 case "settings": router.selectedTab = .settings
+                case "profile": router.selectedTab = .profile
                 case "editor":
                     router.selectedTab = .day
                     router.openEditor(taskId: nil)
@@ -63,5 +82,27 @@ struct ContentRootView: View {
                 router.selectedDay = Date().startOfLocalDay
             }
         }
+    }
+
+    private var mergeSheetShown: Binding<Bool> {
+        Binding(
+            get: { sync.mergeInProgress || sync.mergeSummary != nil },
+            set: { shown in
+                if !shown { sync.mergeSummary = nil }
+            }
+        )
+    }
+
+    private var mergeChoiceShown: Binding<Bool> {
+        Binding(
+            get: { auth.pendingMergeChoice != nil },
+            set: { _ in }
+        )
+    }
+
+    private var mergeChoiceMessage: String {
+        let count = auth.pendingMergeChoice?.habitCount ?? 0
+        let habits = count == 1 ? "1 habit" : "\(count) habits"
+        return "\(AppCopy.profileMergeBody) Add the \(habits) to this profile, or remove them from this phone. The other profile keeps its copy."
     }
 }

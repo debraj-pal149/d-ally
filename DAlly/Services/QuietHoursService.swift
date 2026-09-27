@@ -2,7 +2,7 @@ import Foundation
 
 enum QuietHoursService {
     static func current() -> QuietHours {
-        let d = UserDefaults.standard
+        let d = SharedSettings.defaults
         return QuietHours(
             enabled: d.object(forKey: AppStorageKey.quietHoursEnabled) as? Bool ?? AppDefaults.quietHoursEnabled,
             startHour: d.object(forKey: AppStorageKey.quietHoursStartHour) as? Int ?? AppDefaults.quietHoursStartHour,

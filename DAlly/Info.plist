@@ -38,6 +38,16 @@
 				<string>dally</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.debrajpal.dally.googlesignin</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.100156185631-2vhimnlohcfpio1gn6pracr6ebu1fda9</string>
+			</array>
+		</dict>
 	</array>
 	<key>UIAppFonts</key>
 	<array>

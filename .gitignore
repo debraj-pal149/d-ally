@@ -67,6 +67,7 @@ playground.xcworkspace
 .env
 .env.*
 !.env.example
+DAlly/GoogleService-Info.plist
 *.pem
 AuthKey_*.p8
 *.mobileprovision
@@ -79,5 +80,6 @@ exportOptions.plist
 
 # Misc
 *.log
+.firebase/
 .cursor/
 agent-transcripts/

@@ -2,6 +2,9 @@ import Foundation
 
 enum AppStorageKey {
     static let hasCompletedOnboarding = "hasCompletedOnboarding"
+    static let welcomeSeen = "welcomeSeen"
+    /// Profile that last synced the habits on this phone. Empty means they belong to no profile yet.
+    static let localDataOwnerUID = "localDataOwnerUID"
     static let appearanceMode = "appearanceMode"
     static let notificationsMasterEnabled = "notificationsMasterEnabled"
     static let hasRequestedNotificationPermission = "hasRequestedNotificationPermission"
@@ -103,6 +106,30 @@ enum AppCopy {
     static let weekReviewNotifTitle = "Your week at d·ally"
     static let weekReviewNotifBody = "Consistency is a pattern. Glance at the calendar."
     static let notifStillOpen = "This one's still open for today."
+
+    static let profileSetupTitle = "Your profile"
+    static let profileSetupBody = "Keep your habits and history on every phone."
+    static let profileContinueGoogle = "Continue with Google"
+    static let profileContinueGuest = "Continue without an account"
+    static let profileGuestFootnote = "Everything stays on this phone. You can sign in later."
+    static let profileLocalOnly = "On this phone only"
+    static let profileLocalBody = "Your habits live on this phone."
+    static let profileExport = "Export history"
+    static let profileSignOut = "Sign out"
+    static let profileDelete = "Delete profile and synced data"
+    static let profileSignOutTitle = "Keep habits on this phone?"
+    static let profileSignOutBody = "Your profile keeps a copy either way."
+    static let profileSignOutKeep = "Keep on this phone"
+    static let profileSignOutRemove = "Remove from this phone"
+    static let profileDeleteTitle = "Delete profile?"
+    static let profileDeleteBody = "Removes your profile and synced history from d·ally's servers. Habits stay on this phone."
+    static let profileDeleteRecent = "Sign in again first, then delete."
+    static let profileMergeTitle = "Habits from another profile"
+    static let profileMergeBody = "This phone has habits from a different profile."
+    static let profileMergeAdd = "Add to this profile"
+    static let profileMergeRemove = "Remove from this phone"
+    static let mergeWorking = "Bringing your history"
+    static let mergeDone = "On your profile"
 
     static func notifItsTime(taskName: String) -> String {
         "It's time to do \(taskName)."
