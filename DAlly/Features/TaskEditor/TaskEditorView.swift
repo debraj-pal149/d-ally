@@ -57,57 +57,66 @@ struct TaskEditorView: View {
         return true
     }
 
+    private var isDeleted: Bool { existing?.deletedAt != nil }
+
     var body: some View {
         NavigationStack {
             Form {
-                Section {
-                    TextField("Name", text: $name)
-                }
+                Group {
+                    Section {
+                        TextField("Name", text: $name)
+                    }
 
-                Section {
-                    ScheduleKindPicker(kind: $kind)
-                    if kind == .fixedTime {
-                        TimeOfDayPicker(title: "Remind me at", hour: $hour, minute: $minute)
-                    } else {
-                        FlexibleWindowFields(
-                            completeHour: $windowEndHour,
-                            completeMinute: $windowEndMinute,
-                            nudgeHour: $hour,
-                            nudgeMinute: $minute
-                        )
+                    Section {
+                        ScheduleKindPicker(kind: $kind)
+                        if kind == .fixedTime {
+                            TimeOfDayPicker(title: "Remind me at", hour: $hour, minute: $minute)
+                        } else {
+                            FlexibleWindowFields(
+                                completeHour: $windowEndHour,
+                                completeMinute: $windowEndMinute,
+                                nudgeHour: $hour,
+                                nudgeMinute: $minute
+                            )
+                        }
+                    }
+
+                    Section("Repeat") {
+                        RepeatPicker(option: $repeatOption, weeklyWeekdaysMask: $weeklyWeekdaysMask)
+                    }
+
+                    Section {
+                        ColorSwatchPicker(hex: $colorHex)
+                    }
+
+                    Section("Priority") {
+                        PriorityPicker(priority: $priority)
+                    }
+
+                    Section("Duration") {
+                        DurationPicker(untilStopped: $untilStopped, endDate: $endDate)
+                    }
+
+                    Section("If still open") {
+                        OverdueReminderPicker(mode: $overdueMode)
+                    }
+
+                    Section {
+                        NotesEditorField(notes: $notes)
+                    }
+
+                    Section {
+                        Toggle("Alerts for this reminder", isOn: $notificationsEnabled)
+                        NotificationPermissionFooter()
                     }
                 }
+                .disabled(isDeleted)
 
-                Section("Repeat") {
-                    RepeatPicker(option: $repeatOption, weeklyWeekdaysMask: $weeklyWeekdaysMask)
-                }
-
-                Section {
-                    ColorSwatchPicker(hex: $colorHex)
-                }
-
-                Section("Priority") {
-                    PriorityPicker(priority: $priority)
-                }
-
-                Section("Duration") {
-                    DurationPicker(untilStopped: $untilStopped, endDate: $endDate)
-                }
-
-                Section("If still open") {
-                    OverdueReminderPicker(mode: $overdueMode)
-                }
-
-                Section {
-                    NotesEditorField(notes: $notes)
-                }
-
-                Section {
-                    Toggle("Alerts for this reminder", isOn: $notificationsEnabled)
-                    NotificationPermissionFooter()
-                }
-
-                if existing != nil {
+                if isDeleted {
+                    Section {
+                        Button(AppCopy.restoreReminder, action: restoreTask)
+                    }
+                } else if existing != nil {
                     Section {
                         Button("Stop reminding", role: .destructive) { confirmStop = true }
                         Button("Delete reminder", role: .destructive) { confirmDelete = true }
@@ -121,7 +130,8 @@ struct TaskEditorView: View {
                     Button("Cancel") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save", action: save).disabled(!canSave)
+                    Button("Save", action: save)
+                        .disabled(!canSave || existing?.deletedAt != nil)
                 }
             }
             .onAppear(perform: loadIfNeeded)
@@ -231,11 +241,21 @@ struct TaskEditorView: View {
     private func deleteTask() {
         guard let task = existing else { return }
         Haptics.delete()
-        let id = task.id
-        DayLogService.deleteLogs(for: id, in: modelContext)
-        modelContext.delete(task)
+        let now = Date()
+        // Soft-delete: keep logs and push the full habit with deletedAt.
+        // Clamp end to the deleted day; never extend a past end date forward.
+        let today = now.startOfLocalDay
+        if let end = task.endDate {
+            if end > today { task.endDate = today }
+        } else {
+            task.endDate = today
+        }
+        task.deletedAt = now
+        task.isStopped = true
+        task.notificationsEnabled = false
+        task.updatedAt = now
         try? modelContext.save()
-        SyncRecorder.habitDeleted(id, in: modelContext)
+        SyncRecorder.habitChanged(task.id, at: now, in: modelContext)
         DayLogService.refreshAfterChange(context: modelContext)
         dismiss()
     }
@@ -244,11 +264,34 @@ struct TaskEditorView: View {
         guard let task = existing else { return }
         let now = Date()
         task.isStopped = true
+        let today = now.startOfLocalDay
+        if let end = task.endDate {
+            if end > today { task.endDate = today }
+        } else {
+            task.endDate = today
+        }
         task.updatedAt = now
         try? modelContext.save()
         SyncRecorder.habitChanged(task.id, at: now, in: modelContext)
         DayLogService.refreshAfterChange(context: modelContext)
         Haptics.delete()
+        dismiss()
+    }
+
+    private func restoreTask() {
+        guard let task = existing else { return }
+        let now = Date()
+        task.deletedAt = nil
+        task.isStopped = false
+        if task.endDate != nil, task.endDate! <= now.startOfLocalDay {
+            task.endDate = nil
+        }
+        task.notificationsEnabled = true
+        task.updatedAt = now
+        try? modelContext.save()
+        SyncRecorder.habitChanged(task.id, at: now, in: modelContext)
+        DayLogService.refreshAfterChange(context: modelContext)
+        Haptics.markDone()
         dismiss()
     }
 }

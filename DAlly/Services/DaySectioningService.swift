@@ -8,6 +8,7 @@ enum DaySectionID: String, Identifiable, Hashable {
     case later
     case missed
     case scheduled
+    case ended
 
     var id: String { rawValue }
 
@@ -20,6 +21,7 @@ enum DaySectionID: String, Identifiable, Hashable {
         case .later: "Later today"
         case .missed: "Missed"
         case .scheduled: "Scheduled"
+        case .ended: "Ended"
         }
     }
 
@@ -32,6 +34,7 @@ enum DaySectionID: String, Identifiable, Hashable {
         case .later: 0.58
         case .missed: 0.62
         case .scheduled: 0.62
+        case .ended: 0.48
         }
     }
 }
@@ -60,14 +63,20 @@ enum DaySectioningService {
         now: Date = Date()
     ) -> [DaySection] {
         let active = TaskOccurrenceService.tasks(for: day, allTasks: tasks)
+        let ended = TaskOccurrenceService.endedHistory(for: day, allTasks: tasks, logs: logs)
+        var result: [DaySection]
         switch kind(of: day, now: now) {
         case .today:
-            return todaySections(day: day, tasks: active, logs: logs, now: now)
+            result = todaySections(day: day, tasks: active, logs: logs, now: now)
         case .past:
-            return pastSections(day: day, tasks: active, logs: logs)
+            result = pastSections(day: day, tasks: active, logs: logs)
         case .future:
-            return futureSections(tasks: active)
+            result = futureSections(tasks: active)
         }
+        if !ended.isEmpty {
+            result.append(DaySection(id: .ended, tasks: ended))
+        }
+        return result
     }
 
     private static func todaySections(day: Date, tasks: [DailyTask], logs: [TaskDayLog], now: Date) -> [DaySection] {

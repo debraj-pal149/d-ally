@@ -114,4 +114,21 @@ enum Persistence {
         guard sqlite3_step(statement) == SQLITE_ROW else { return 0 }
         return Int(sqlite3_column_int(statement, 0))
     }
+
+    /// Old stops left `endDate` nil, so those habits matched every day in Ended.
+    private static let repairedStoppedEndDatesKey = "repairedStoppedEndDates.v1"
+
+    static func repairStoppedHabitsIfNeeded(in context: ModelContext) {
+        guard !UserDefaults.standard.bool(forKey: repairedStoppedEndDatesKey) else { return }
+        let tasks = (try? context.fetch(FetchDescriptor<DailyTask>())) ?? []
+        var changed = false
+        for task in tasks where task.isStopped && task.deletedAt == nil && task.endDate == nil {
+            task.endDate = task.updatedAt.startOfLocalDay
+            changed = true
+        }
+        if changed {
+            try? context.save()
+        }
+        UserDefaults.standard.set(true, forKey: repairedStoppedEndDatesKey)
+    }
 }

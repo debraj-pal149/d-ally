@@ -24,7 +24,7 @@
 	<true/>
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
-		<string>com.dally.app.refresh</string>
+		<string>com.debrajpal.dally.refresh</string>
 	</array>
 	<key>CFBundleURLTypes</key>
 	<array>

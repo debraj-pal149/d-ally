@@ -209,6 +209,7 @@ final class DayLogIndependenceTests: XCTestCase {
 }
 
 final class SchedulingLogicTests: XCTestCase {
+    @MainActor
     func testNoHourliesInsideQuietHours() {
         let task = DailyTask(
             name: "Gym",
@@ -231,6 +232,7 @@ final class SchedulingLogicTests: XCTestCase {
         XCTAssertTrue(items.contains { $0.kind == "ontime" })
     }
 
+    @MainActor
     func testOverdueOnceDefersOutOfQuietHoursEvenIfCandidatePassed() {
         // Force quiet hours window for the test via UserDefaults used by QuietHoursService
         let d = UserDefaults.standard
@@ -336,6 +338,23 @@ final class CloudCodecTests: XCTestCase {
         XCTAssertNil(cloud?.deletedAt)
     }
 
+    func testHabitSoftDeleteRoundTrip() {
+        let task = DailyTask(name: "Pill", colorHex: "#FF3B30")
+        let when = Date()
+        task.deletedAt = when
+        task.isStopped = true
+        task.notificationsEnabled = false
+        let data = CloudCodec.habit(from: task)
+        let cloud = CloudCodec.decodeHabit(data)
+        XCTAssertEqual(cloud?.name, "Pill")
+        XCTAssertEqual(cloud?.deletedAt, when)
+        let copy = CloudCodec.makeTask(from: cloud!)
+        XCTAssertEqual(copy.name, "Pill")
+        XCTAssertEqual(copy.deletedAt, when)
+        XCTAssertTrue(copy.isStopped)
+        XCTAssertFalse(copy.isLive)
+    }
+
     func testHabitTombstoneDecodes() {
         let id = UUID()
         let when = Date()
@@ -437,5 +456,64 @@ final class MonthConsistencyTests: XCTestCase {
         let done = MonthConsistency.count(task: task, logs: logs, viewing: today, now: today.addingTimeInterval(3600))
         XCTAssertEqual(done.scheduled, dayCount + 1)
         XCTAssertEqual(done.kept, 2)
+    }
+}
+
+final class SoftDeleteHistoryTests: XCTestCase {
+    func testDeletedHabitAppearsInEndedOnlyThroughDeletedDay() {
+        let start = Date().startOfLocalDay.addingLocalDays(-5)
+        let deletedDay = start.addingLocalDays(2)
+        let task = DailyTask(name: "Pill", colorHex: "#FF3B30", startDate: start)
+        task.endDate = deletedDay
+        task.deletedAt = deletedDay.addingTimeInterval(15 * 3600) // afternoon of deleted day
+        task.isStopped = true
+
+        XCTAssertFalse(task.isActive(on: deletedDay))
+        XCTAssertTrue(task.belongsInEndedHistory(on: deletedDay))
+        XCTAssertTrue(task.belongsInEndedHistory(on: start))
+        XCTAssertFalse(task.belongsInEndedHistory(on: start.addingLocalDays(-1)))
+        XCTAssertFalse(task.belongsInEndedHistory(on: deletedDay.addingLocalDays(1)))
+
+        let endedOnDeleteDay = TaskOccurrenceService.endedHistory(for: deletedDay, allTasks: [task])
+        XCTAssertEqual(endedOnDeleteDay.map(\.id), [task.id])
+
+        let endedAfter = TaskOccurrenceService.endedHistory(
+            for: deletedDay.addingLocalDays(1),
+            allTasks: [task]
+        )
+        XCTAssertTrue(endedAfter.isEmpty)
+    }
+
+    func testOldOneDayHabitDeletedLaterDoesNotAppearOnToday() {
+        let start = Date().startOfLocalDay.addingLocalDays(-90)
+        let task = DailyTask(
+            name: "One day",
+            colorHex: "#007AFF",
+            startDate: start,
+            endDate: start
+        )
+        // Soft-deleted today must not extend history past the original end.
+        task.deletedAt = Date()
+        task.isStopped = true
+
+        let today = Date().startOfLocalDay
+        XCTAssertFalse(task.belongsInEndedHistory(on: today))
+        XCTAssertTrue(task.belongsInEndedHistory(on: start))
+        XCTAssertTrue(TaskOccurrenceService.endedHistory(for: today, allTasks: [task]).isEmpty)
+    }
+
+    func testStoppedWithoutEndDateExcludedUntilRepaired() {
+        let start = Date().startOfLocalDay.addingLocalDays(-3)
+        let today = Date().startOfLocalDay
+        let task = DailyTask(name: "Gym", colorHex: "#34C759", startDate: start)
+        task.isStopped = true
+        // No endDate: must not haunt every day.
+        XCTAssertNil(task.historyEndDay)
+        XCTAssertFalse(task.belongsInEndedHistory(on: today))
+        XCTAssertTrue(TaskOccurrenceService.endedHistory(for: today, allTasks: [task]).isEmpty)
+
+        task.endDate = today
+        XCTAssertTrue(task.belongsInEndedHistory(on: today))
+        XCTAssertFalse(task.belongsInEndedHistory(on: today.addingLocalDays(1)))
     }
 }

@@ -32,7 +32,10 @@ struct NotificationPrimingView: View {
                 .tint(AppColors.aqua)
                 .padding(.top, 8)
 
-                Button(AppCopy.notNow) { dismiss() }
+                Button(AppCopy.notNow) {
+                    hasRequested = true
+                    dismiss()
+                }
                     .frame(maxWidth: .infinity)
             }
             .padding(24)

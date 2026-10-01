@@ -68,6 +68,9 @@ enum CloudCodec {
         if let end = task.endDate {
             data["endDay"] = end.localDayKey
         }
+        if let deletedAt = task.deletedAt {
+            data["deletedAt"] = deletedAt
+        }
         return data
     }
 
@@ -105,7 +108,8 @@ enum CloudCodec {
         guard let idString = data["id"] as? String, let id = UUID(uuidString: idString),
               let updatedAt = date(data["updatedAt"]) else { return nil }
         let deletedAt = date(data["deletedAt"])
-        if deletedAt != nil {
+        // Legacy hard tombstone: only id + deletedAt. Soft-delete keeps the full fields.
+        if deletedAt != nil, data["name"] == nil, data["startDay"] == nil {
             return CloudHabit(
                 id: id, name: "", notes: "", scheduleKind: ScheduleKind.fixedTime.rawValue, hour: 9, minute: 0,
                 windowEndHour: 0, windowEndMinute: 0, priority: PriorityLevel.normal.rawValue, colorHex: "#2CD4FF",
@@ -139,7 +143,7 @@ enum CloudCodec {
             repeatKind: data["repeatKind"] as? String ?? RepeatKind.daily.rawValue,
             repeatIntervalDays: int(data["repeatIntervalDays"]) ?? 2,
             weeklyWeekdaysMask: int(data["weeklyWeekdaysMask"]) ?? 0,
-            deletedAt: nil
+            deletedAt: deletedAt
         )
     }
 
@@ -181,6 +185,7 @@ enum CloudCodec {
         task.repeatKind = cloud.repeatKind
         task.repeatIntervalDays = cloud.repeatIntervalDays
         task.weeklyWeekdaysMask = cloud.weeklyWeekdaysMask
+        task.deletedAt = cloud.deletedAt
     }
 
     static func makeTask(from cloud: CloudHabit) -> DailyTask {

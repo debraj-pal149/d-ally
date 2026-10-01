@@ -238,15 +238,19 @@ final class SyncEngine {
                 remoteUpdatedAt: cloud.updatedAt
             )
             guard decision == .applyRemote else { continue }
-            if cloud.deletedAt != nil {
+            if cloud.deletedAt != nil, cloud.name.isEmpty {
+                // Legacy hard tombstone: soft-delete locally and keep name/color when we have them.
                 if let local {
-                    context.delete(local)
+                    local.deletedAt = cloud.deletedAt
+                    local.isStopped = true
+                    local.notificationsEnabled = false
+                    local.updatedAt = cloud.updatedAt
                     changed = true
                 }
             } else if let local {
                 CloudCodec.apply(cloud, to: local)
                 changed = true
-            } else {
+            } else if !cloud.name.isEmpty {
                 context.insert(CloudCodec.makeTask(from: cloud))
                 changed = true
             }

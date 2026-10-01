@@ -3,6 +3,7 @@ import SwiftUI
 enum CalendarMarksMode: String, CaseIterable, Identifiable {
     case kept
     case missed
+    case deleted
 
     var id: String { rawValue }
 
@@ -10,13 +11,7 @@ enum CalendarMarksMode: String, CaseIterable, Identifiable {
         switch self {
         case .kept: AppCopy.calendarModeKept
         case .missed: AppCopy.calendarModeMissed
-        }
-    }
-
-    var legend: String {
-        switch self {
-        case .kept: AppCopy.calendarLegend
-        case .missed: AppCopy.calendarLegendMissed
+        case .deleted: AppCopy.calendarModeDeleted
         }
     }
 }
@@ -116,14 +111,15 @@ struct MonthGridView: View {
             let kept = dayLogs.filter { $0.dayLogStatus == .kept }
             let skipped = dayLogs.filter { $0.dayLogStatus == .skipped }
             let keptTasks = kept.compactMap { byId[$0.taskId] }
-                .filter(included)
+                .filter { $0.isLive && included($0) }
                 .sorted { a, b in
                     let da = a.dueDate(on: day)
                     let db = b.dueDate(on: day)
                     if da != db { return da < db }
                     return a.name < b.name
                 }
-            let skippedFocused = skipped.compactMap { byId[$0.taskId] }.filter(included)
+            let skippedFocused = skipped.compactMap { byId[$0.taskId] }
+                .filter { $0.isLive && included($0) }
             let dots = keptTasks.map { MarkDot(hex: $0.colorHex, pattern: $0.markPatternKind) }
             return DayMarks(dots: dots, skipOnly: dots.isEmpty && !skippedFocused.isEmpty)
 
@@ -144,6 +140,28 @@ struct MonthGridView: View {
                 }
             let dots = missed.map { MarkDot(hex: $0.colorHex, pattern: $0.markPatternKind) }
             return DayMarks(dots: dots, skipOnly: false)
+
+        case .deleted:
+            let key = day.localDayKey
+            let dayLogs = logs.filter { $0.dayKey == key }
+            let deletedTasks: (TaskDayLog) -> DailyTask? = { log in
+                guard let task = byId[log.taskId], task.deletedAt != nil else { return nil }
+                guard dayStart <= task.deletedAt!.startOfLocalDay else { return nil }
+                guard included(task) else { return nil }
+                return task
+            }
+            let keptTasks = dayLogs.filter { $0.dayLogStatus == .kept }
+                .compactMap(deletedTasks)
+                .sorted { a, b in
+                    let da = a.dueDate(on: day)
+                    let db = b.dueDate(on: day)
+                    if da != db { return da < db }
+                    return a.name < b.name
+                }
+            let skippedFocused = dayLogs.filter { $0.dayLogStatus == .skipped }
+                .compactMap(deletedTasks)
+            let dots = keptTasks.map { MarkDot(hex: $0.colorHex, pattern: $0.markPatternKind) }
+            return DayMarks(dots: dots, skipOnly: dots.isEmpty && !skippedFocused.isEmpty)
         }
     }
 }

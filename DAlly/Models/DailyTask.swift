@@ -22,6 +22,8 @@ final class DailyTask {
     var updatedAt: Date
     var sortOrder: Int
     var notificationsEnabled: Bool
+    /// Soft-delete timestamp. History stays; the habit leaves live Day/Calendar lists.
+    var deletedAt: Date?
     /// daily | everyNDays | weekly
     var repeatKind: String = RepeatKind.daily.rawValue
     /// Used when repeatKind == everyNDays (2 or 3).
@@ -49,6 +51,7 @@ final class DailyTask {
         updatedAt: Date = Date(),
         sortOrder: Int = 0,
         notificationsEnabled: Bool = true,
+        deletedAt: Date? = nil,
         repeatKind: RepeatKind = .daily,
         repeatIntervalDays: Int = 2,
         weeklyWeekdaysMask: Int = 0
@@ -72,6 +75,7 @@ final class DailyTask {
         self.updatedAt = updatedAt
         self.sortOrder = sortOrder
         self.notificationsEnabled = notificationsEnabled
+        self.deletedAt = deletedAt
         self.repeatKind = repeatKind.rawValue
         self.repeatIntervalDays = repeatIntervalDays
         self.weeklyWeekdaysMask = weeklyWeekdaysMask
@@ -125,12 +129,30 @@ final class DailyTask {
         }
     }
 
-    func isActive(on day: Date) -> Bool {
-        guard !isStopped else { return false }
+    /// Still in the live Day list and eligible for new alerts.
+    var isLive: Bool { deletedAt == nil && !isStopped }
+
+    /// Soft-deleted (history retained) or stopped.
+    var isEnded: Bool { deletedAt != nil || isStopped }
+
+    /// Last calendar day this habit may appear in history: earlier of end date and deleted day.
+    var historyEndDay: Date? {
+        let deleted = deletedAt?.startOfLocalDay
+        let ended = endDate?.startOfLocalDay
+        switch (deleted, ended) {
+        case let (d?, e?): return min(d, e)
+        case let (d?, nil): return d
+        case let (nil, e?): return e
+        case (nil, nil): return nil
+        }
+    }
+
+    /// True when `day` falls inside start…history end and matches the repeat rule.
+    func isScheduled(on day: Date) -> Bool {
         let dayStart = day.startOfLocalDay
         let start = startDate.startOfLocalDay
         if dayStart < start { return false }
-        if let end = endDate, dayStart > end.startOfLocalDay { return false }
+        if let end = historyEndDay, dayStart > end { return false }
 
         switch repeatCadence {
         case .daily:
@@ -143,6 +165,21 @@ final class DailyTask {
             let weekday = Calendar.current.component(.weekday, from: dayStart)
             return WeeklyWeekdays.contains(mask: weeklyWeekdaysMask, weekday: weekday)
         }
+    }
+
+    /// Live occurrence for Day / notifications (excludes stopped and deleted).
+    func isActive(on day: Date) -> Bool {
+        guard isLive else { return false }
+        return isScheduled(on: day)
+    }
+
+    /// Ended habits only on days they actually ran: from start through deleted/end day.
+    /// Never before start, never after the end. Unbounded stopped habits are excluded
+    /// until an end date is repaired.
+    func belongsInEndedHistory(on day: Date) -> Bool {
+        guard isEnded else { return false }
+        guard historyEndDay != nil else { return false }
+        return isScheduled(on: day)
     }
 
     var repeatSummary: String {

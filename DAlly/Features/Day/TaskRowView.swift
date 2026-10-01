@@ -73,7 +73,7 @@ struct TaskRowView: View {
                     Text(AppCopy.futureResolve)
                 }
                 Button("Task settings", action: onOpenActions)
-                if task.isStopped == false {
+                if task.isLive {
                     Button("Stop reminding", role: .destructive, action: onStop)
                 }
             }
@@ -131,6 +131,11 @@ struct TaskRowView: View {
                         tint: AppColors.textTertiary(scheme)
                     )
                 }
+            case .ended:
+                DayStatusChip(
+                    text: task.deletedAt != nil ? "Deleted" : "Stopped",
+                    tint: AppColors.textTertiary(scheme)
+                )
             case .kept, .skipped, .scheduled:
                 EmptyView()
             }

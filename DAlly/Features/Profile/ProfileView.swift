@@ -177,7 +177,7 @@ struct ProfileView: View {
     // MARK: Derived
 
     private var activeHabits: Int {
-        tasks.filter { !$0.isStopped }.count
+        tasks.filter { $0.isLive }.count
     }
 
     private var sinceLabel: String {

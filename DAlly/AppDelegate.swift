@@ -34,8 +34,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
     func applicationDidBecomeActive(_ application: UIApplication) {
         scheduleBackgroundRefresh()
         SharedSettings.mirrorFromAppDefaults()
-        let context = ModelContext(Persistence.shared)
-        NotificationSchedulingService.shared.rescheduleFromStore(context: context)
+        NotificationSchedulingService.shared.rescheduleFromStore()
         WidgetCenter.shared.reloadAllTimelines()
         Task { @MainActor in
             SyncEngine.shared.pushNow()
@@ -50,8 +49,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
             observer,
             { _, _, _, _, _ in
                 DispatchQueue.main.async {
-                    let context = ModelContext(Persistence.shared)
-                    NotificationSchedulingService.shared.rescheduleFromStore(context: context)
+                    NotificationSchedulingService.shared.rescheduleFromStore()
                     Task { @MainActor in
                         SyncEngine.shared.pushNow()
                     }
@@ -125,8 +123,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
     }
 
     private static func handleRefresh(_ task: BGAppRefreshTask) {
-        let context = ModelContext(Persistence.shared)
-        NotificationSchedulingService.shared.rescheduleFromStore(context: context)
+        NotificationSchedulingService.shared.rescheduleFromStore()
         AppDelegate().scheduleBackgroundRefresh()
         task.setTaskCompleted(success: true)
     }

@@ -56,7 +56,7 @@ struct DayView: View {
                                 )
                             }
 
-                            ForEach(sections) { section in
+                            ForEach(sections.filter { $0.id != .ended }) { section in
                                 let rows = section.tasks.filter { $0.id != hero?.task.id }
                                 if !rows.isEmpty {
                                     DaySectionHeader(title: section.id.title(isToday: kind == .today))
@@ -78,6 +78,21 @@ struct DayView: View {
                                         )
                                     }
                                 }
+                            }
+
+                            if let ended = sections.first(where: { $0.id == .ended }), !ended.tasks.isEmpty {
+                                EndedHabitsSection(
+                                    tasks: ended.tasks,
+                                    day: day,
+                                    logs: logs,
+                                    canResolve: canResolve && kind != .future,
+                                    onToggleKept: markKept,
+                                    onSkip: skip,
+                                    onClear: clear,
+                                    onOpenActions: { task in
+                                        router.openTaskActions(taskId: task.id, day: day)
+                                    }
+                                )
                             }
                         }
                         .padding(.horizontal, 16)
@@ -133,11 +148,60 @@ struct DayView: View {
     private func stop(_ task: DailyTask) {
         let now = Date()
         task.isStopped = true
+        let today = now.startOfLocalDay
+        if let end = task.endDate {
+            if end > today { task.endDate = today }
+        } else {
+            task.endDate = today
+        }
         task.updatedAt = now
         try? modelContext.save()
         SyncRecorder.habitChanged(task.id, at: now, in: modelContext)
         DayLogService.refreshAfterChange(context: modelContext)
         Haptics.delete()
+    }
+}
+
+private struct EndedHabitsSection: View {
+    var tasks: [DailyTask]
+    var day: Date
+    var logs: [TaskDayLog]
+    var canResolve: Bool
+    var onToggleKept: (DailyTask) -> Void
+    var onSkip: (DailyTask) -> Void
+    var onClear: (DailyTask) -> Void
+    var onOpenActions: (DailyTask) -> Void
+    @State private var expanded = false
+    @Environment(\.colorScheme) private var scheme
+
+    var body: some View {
+        DisclosureGroup(isExpanded: $expanded) {
+            ForEach(tasks, id: \.id) { task in
+                TaskRowView(
+                    task: task,
+                    day: day,
+                    section: .ended,
+                    status: DayLogService.status(taskId: task.id, day: day, logs: logs),
+                    canResolve: canResolve,
+                    onToggleKept: { onToggleKept(task) },
+                    onSkip: { onSkip(task) },
+                    onClear: { onClear(task) },
+                    onOpenActions: { onOpenActions(task) },
+                    onStop: {}
+                )
+            }
+        } label: {
+            HStack(spacing: 8) {
+                Text("Ended")
+                    .font(AppTypography.sectionHeader)
+                    .foregroundStyle(AppColors.textTertiary(scheme))
+                Text("· \(tasks.count)")
+                    .font(AppTypography.caption)
+                    .foregroundStyle(AppColors.textTertiary(scheme))
+                Spacer()
+            }
+        }
+        .tint(AppColors.textTertiary(scheme))
     }
 }
 

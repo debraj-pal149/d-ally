@@ -59,7 +59,9 @@ struct ContentRootView: View {
             // that broke completing tasks on previous days. Use “Back to today” instead.
         }
         .onAppear {
+            Persistence.repairStoppedHabitsIfNeeded(in: modelContext)
             NotificationSchedulingService.shared.rescheduleFromStore(context: modelContext)
+            offerNotificationPermissionIfNeeded()
             if UserDefaults.standard.bool(forKey: "seedPreviewData") {
                 PreviewSampleData.seedIfNeeded(into: modelContext)
                 UserDefaults.standard.set(false, forKey: "seedPreviewData")
@@ -81,6 +83,30 @@ struct ContentRootView: View {
             if Date.isSameLocalDay(router.selectedDay, Date().addingLocalDays(-1)) {
                 router.selectedDay = Date().startOfLocalDay
             }
+        }
+    }
+
+    /// Alerts default on in-app, but iOS still needs one Allow tap. Offer that once
+    /// when the person already has habits and we have never asked on this install.
+    private func offerNotificationPermissionIfNeeded() {
+        guard hasCompletedOnboarding else { return }
+        let masterOn = UserDefaults.standard.object(forKey: AppStorageKey.notificationsMasterEnabled) as? Bool
+            ?? AppDefaults.notificationsMasterEnabled
+        guard masterOn else { return }
+        let alreadyAsked = UserDefaults.standard.bool(forKey: AppStorageKey.hasRequestedNotificationPermission)
+        guard !alreadyAsked else { return }
+        let habits = (try? modelContext.fetch(FetchDescriptor<DailyTask>())) ?? []
+        guard habits.contains(where: { $0.notificationsEnabled && $0.isLive }) else { return }
+
+        Task { @MainActor in
+            let state = await NotificationPermissionService.shared.currentState()
+            guard state == .notDetermined else { return }
+            // Let the first frame settle so this does not fight other sheets.
+            try? await Task.sleep(nanoseconds: 400_000_000)
+            guard !router.showNotificationPriming,
+                  router.taskActionPrompt == nil,
+                  !router.showTaskEditor else { return }
+            router.showNotificationPriming = true
         }
     }
 
