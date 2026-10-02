@@ -378,12 +378,61 @@ final class CloudCodecTests: XCTestCase {
         XCTAssertEqual(parts?.taskId, taskId)
         XCTAssertEqual(parts?.dayKey, "2026-09-27")
     }
+
+    func testBookmarkRoundTrip() {
+        let bookmark = DayBookmark(title: "Doctor", notes: "Annual", dayKey: "2026-10-02")
+        let cloud = CloudCodec.decodeBookmark(CloudCodec.bookmark(from: bookmark))
+        XCTAssertEqual(cloud?.id, bookmark.id)
+        XCTAssertEqual(cloud?.title, "Doctor")
+        XCTAssertEqual(cloud?.notes, "Annual")
+        XCTAssertEqual(cloud?.dayKey, "2026-10-02")
+        XCTAssertNil(cloud?.deletedAt)
+        let copy = CloudCodec.makeBookmark(from: cloud!)
+        XCTAssertEqual(copy.title, "Doctor")
+        XCTAssertEqual(copy.dayKey, "2026-10-02")
+        XCTAssertTrue(copy.isLive)
+    }
+
+    func testBookmarkSoftDeleteRoundTrip() {
+        let bookmark = DayBookmark(title: "Doctor", dayKey: "2026-10-02")
+        let when = Date()
+        bookmark.deletedAt = when
+        let cloud = CloudCodec.decodeBookmark(CloudCodec.bookmark(from: bookmark))
+        XCTAssertEqual(cloud?.deletedAt, when)
+        let copy = CloudCodec.makeBookmark(from: cloud!)
+        XCTAssertFalse(copy.isLive)
+    }
+
+    func testHabitColorRejectsBookmarkBlackAndWhite() {
+        XCTAssertTrue(TaskColorPalette.isReservedForBookmarks("#000000"))
+        XCTAssertTrue(TaskColorPalette.isReservedForBookmarks("#FFFFFF"))
+        XCTAssertTrue(TaskColorPalette.isReservedForBookmarks("#0A0A0A"))
+        XCTAssertTrue(TaskColorPalette.isReservedForBookmarks("#FAFAFA"))
+        XCTAssertFalse(TaskColorPalette.isReservedForBookmarks("#1C3D5A"))
+        XCTAssertFalse(TaskColorPalette.isReservedForBookmarks("#007AFF"))
+        for swatch in TaskColorPalette.forHabits {
+            XCTAssertFalse(TaskColorPalette.isReservedForBookmarks(swatch.hex), swatch.name)
+        }
+        XCTAssertEqual(TaskColorPalette.habitSafeHex("#000000"), TaskColorPalette.forHabits[0].hex)
+        XCTAssertEqual(TaskColorPalette.habitSafeHex("#FFFFFF"), TaskColorPalette.forHabits[0].hex)
+    }
+}
+
+final class DayBookmarkTests: XCTestCase {
+    func testLiveFiltersToOneDay() {
+        let a = DayBookmark(title: "A", dayKey: "2026-10-02")
+        let b = DayBookmark(title: "B", dayKey: "2026-10-03")
+        let deleted = DayBookmark(title: "Gone", dayKey: "2026-10-02", deletedAt: Date())
+        let day = Date.date(fromDayKey: "2026-10-02")!
+        let live = DayBookmark.live(on: day, in: [a, b, deleted])
+        XCTAssertEqual(live.map(\.title), ["A"])
+    }
 }
 
 @MainActor
 final class SyncRecorderTests: XCTestCase {
     private func makeContext() throws -> ModelContext {
-        let schema = Schema([DailyTask.self, TaskDayLog.self, SyncOutbox.self])
+        let schema = Schema([DailyTask.self, TaskDayLog.self, SyncOutbox.self, DayBookmark.self])
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         let container = try ModelContainer(for: schema, configurations: config)
         return ModelContext(container)
@@ -427,11 +476,24 @@ final class SyncRecorderTests: XCTestCase {
         context.insert(a)
         context.insert(b)
         context.insert(TaskDayLog(taskId: a.id, dayKey: "2026-09-20", status: .kept))
+        context.insert(DayBookmark(title: "Doctor", dayKey: "2026-10-02"))
         try context.save()
 
         SyncRecorder.enqueueAll(in: context)
         SyncRecorder.enqueueAll(in: context)
-        XCTAssertEqual(SyncRecorder.pending(in: context).count, 3)
+        XCTAssertEqual(SyncRecorder.pending(in: context).count, 4)
+    }
+
+    func testBookmarkChangedQueuesOutbox() throws {
+        let context = try makeContext()
+        let bookmark = DayBookmark(title: "Doctor", dayKey: "2026-10-02")
+        context.insert(bookmark)
+        try context.save()
+        SyncRecorder.bookmarkChanged(bookmark.id, in: context)
+        let pending = SyncRecorder.pending(in: context)
+        XCTAssertEqual(pending.count, 1)
+        XCTAssertEqual(pending.first?.recordKind, .bookmark)
+        XCTAssertFalse(pending.first?.isTombstone ?? true)
     }
 }
 

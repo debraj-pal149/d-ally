@@ -50,6 +50,11 @@ enum TimeDisplay {
         date.formatted(.dateTime.weekday(.wide).month(.abbreviated).day())
     }
 
+    /// e.g. "2 October" for bookmark titles.
+    static func dayMonth(_ date: Date) -> String {
+        date.formatted(.dateTime.day().month(.wide))
+    }
+
     static func monthYear(_ date: Date) -> String {
         date.formatted(.dateTime.month(.wide).year())
     }

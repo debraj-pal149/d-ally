@@ -27,6 +27,9 @@ struct ContentRootView: View {
         .sheet(isPresented: $router.showTaskEditor) {
             TaskEditorView(taskId: router.editingTaskId)
         }
+        .sheet(isPresented: $router.showBookmarkEditor) {
+            BookmarkEditorView(bookmarkId: router.editingBookmarkId, day: router.bookmarkEditorDay)
+        }
         .sheet(item: $router.taskActionPrompt) { prompt in
             CompletionPromptSheet(taskId: prompt.taskId, day: prompt.day)
         }
@@ -105,7 +108,8 @@ struct ContentRootView: View {
             try? await Task.sleep(nanoseconds: 400_000_000)
             guard !router.showNotificationPriming,
                   router.taskActionPrompt == nil,
-                  !router.showTaskEditor else { return }
+                  !router.showTaskEditor,
+                  !router.showBookmarkEditor else { return }
             router.showNotificationPriming = true
         }
     }

@@ -6,6 +6,7 @@ struct ProfileView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var tasks: [DailyTask]
     @Query private var logs: [TaskDayLog]
+    @Query private var bookmarks: [DayBookmark]
 
     @State private var showSignOut = false
     @State private var showDelete = false
@@ -163,7 +164,7 @@ struct ProfileView: View {
                 }
             } else {
                 Button {
-                    exportURL = try? HistoryExport.makeFile(tasks: tasks, logs: logs)
+                    exportURL = try? HistoryExport.makeFile(tasks: tasks, logs: logs, bookmarks: bookmarks)
                 } label: {
                     Label(AppCopy.profileExport, systemImage: "square.and.arrow.up")
                         .foregroundStyle(AppColors.textPrimary(scheme))
@@ -172,6 +173,7 @@ struct ProfileView: View {
         }
         .onChange(of: logs.count) { _, _ in exportURL = nil }
         .onChange(of: tasks.count) { _, _ in exportURL = nil }
+        .onChange(of: bookmarks.count) { _, _ in exportURL = nil }
     }
 
     // MARK: Derived

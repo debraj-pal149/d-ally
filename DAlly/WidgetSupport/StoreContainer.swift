@@ -3,7 +3,9 @@ import SQLite3
 import SwiftData
 
 enum Persistence {
-    static let modelTypes: [any PersistentModel.Type] = [DailyTask.self, TaskDayLog.self, SyncOutbox.self]
+    static let modelTypes: [any PersistentModel.Type] = [
+        DailyTask.self, TaskDayLog.self, SyncOutbox.self, DayBookmark.self
+    ]
 
     /// A new Schema each time; SwiftData binds a Schema to the first container that uses it.
     static var schema: Schema { Schema(modelTypes) }
@@ -116,15 +118,25 @@ enum Persistence {
     }
 
     /// Old stops left `endDate` nil, so those habits matched every day in Ended.
-    private static let repairedStoppedEndDatesKey = "repairedStoppedEndDates.v1"
+    /// v2 also queues a sync so other phones get the clamped end dates / soft-deletes.
+    private static let repairedStoppedEndDatesKey = "repairedStoppedEndDates.v2"
 
     static func repairStoppedHabitsIfNeeded(in context: ModelContext) {
         guard !UserDefaults.standard.bool(forKey: repairedStoppedEndDatesKey) else { return }
         let tasks = (try? context.fetch(FetchDescriptor<DailyTask>())) ?? []
         var changed = false
-        for task in tasks where task.isStopped && task.deletedAt == nil && task.endDate == nil {
-            task.endDate = task.updatedAt.startOfLocalDay
-            changed = true
+        let now = Date()
+        for task in tasks {
+            if task.isStopped && task.deletedAt == nil && task.endDate == nil {
+                task.endDate = task.updatedAt.startOfLocalDay
+                task.updatedAt = now
+                changed = true
+            }
+            // Push ended habits once so cloud matches local soft-delete / stop bounds.
+            if task.isEnded {
+                SyncRecorder.habitChanged(task.id, at: task.updatedAt, in: context)
+                changed = true
+            }
         }
         if changed {
             try? context.save()

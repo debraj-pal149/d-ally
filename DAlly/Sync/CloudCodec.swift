@@ -37,6 +37,16 @@ struct CloudLog: Equatable {
     var deletedAt: Date?
 }
 
+struct CloudBookmark: Equatable {
+    var id: UUID
+    var title: String
+    var notes: String
+    var dayKey: String
+    var createdAt: Date
+    var updatedAt: Date
+    var deletedAt: Date?
+}
+
 enum CloudCodec {
     static let schemaVersion = 1
 
@@ -104,6 +114,31 @@ enum CloudCodec {
         ]
     }
 
+    static func bookmark(from item: DayBookmark) -> [String: Any] {
+        var data: [String: Any] = [
+            "id": item.id.uuidString,
+            "title": item.title,
+            "notes": item.notes,
+            "dayKey": item.dayKey,
+            "createdAt": item.createdAt,
+            "updatedAt": item.updatedAt,
+            "schema": schemaVersion,
+        ]
+        if let deletedAt = item.deletedAt {
+            data["deletedAt"] = deletedAt
+        }
+        return data
+    }
+
+    static func bookmarkTombstone(id: UUID, deletedAt: Date) -> [String: Any] {
+        [
+            "id": id.uuidString,
+            "deletedAt": deletedAt,
+            "updatedAt": deletedAt,
+            "schema": schemaVersion,
+        ]
+    }
+
     static func decodeHabit(_ data: [String: Any]) -> CloudHabit? {
         guard let idString = data["id"] as? String, let id = UUID(uuidString: idString),
               let updatedAt = date(data["updatedAt"]) else { return nil }
@@ -161,6 +196,33 @@ enum CloudCodec {
         )
     }
 
+    static func decodeBookmark(_ data: [String: Any]) -> CloudBookmark? {
+        guard let idString = data["id"] as? String, let id = UUID(uuidString: idString),
+              let updatedAt = date(data["updatedAt"]) else { return nil }
+        let deletedAt = date(data["deletedAt"])
+        if deletedAt != nil, data["title"] == nil, data["dayKey"] == nil {
+            return CloudBookmark(
+                id: id,
+                title: "",
+                notes: "",
+                dayKey: "",
+                createdAt: updatedAt,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt
+            )
+        }
+        guard let title = data["title"] as? String, let dayKey = data["dayKey"] as? String else { return nil }
+        return CloudBookmark(
+            id: id,
+            title: title,
+            notes: data["notes"] as? String ?? "",
+            dayKey: dayKey,
+            createdAt: date(data["createdAt"]) ?? updatedAt,
+            updatedAt: updatedAt,
+            deletedAt: deletedAt
+        )
+    }
+
     /// Writes cloud fields onto a local habit. `updatedAt` follows the cloud value so the
     /// record does not look newer than the copy it came from.
     static func apply(_ cloud: CloudHabit, to task: DailyTask) {
@@ -172,7 +234,7 @@ enum CloudCodec {
         task.windowEndHour = cloud.windowEndHour
         task.windowEndMinute = cloud.windowEndMinute
         task.priority = cloud.priority
-        task.colorHex = cloud.colorHex
+        task.colorHex = TaskColorPalette.habitSafeHex(cloud.colorHex)
         task.markPattern = cloud.markPattern
         task.startDate = Date.date(fromDayKey: cloud.startDay)?.startOfLocalDay ?? task.startDate
         task.endDate = cloud.endDay.flatMap(Date.date(fromDayKey:))?.startOfLocalDay
@@ -192,6 +254,31 @@ enum CloudCodec {
         let task = DailyTask(id: cloud.id, name: cloud.name, colorHex: cloud.colorHex)
         apply(cloud, to: task)
         return task
+    }
+
+    static func apply(_ cloud: CloudBookmark, to bookmark: DayBookmark) {
+        if !cloud.title.isEmpty {
+            bookmark.title = cloud.title
+        }
+        if !cloud.dayKey.isEmpty {
+            bookmark.dayKey = cloud.dayKey
+        }
+        bookmark.notes = cloud.notes
+        bookmark.createdAt = cloud.createdAt
+        bookmark.updatedAt = cloud.updatedAt
+        bookmark.deletedAt = cloud.deletedAt
+    }
+
+    static func makeBookmark(from cloud: CloudBookmark) -> DayBookmark {
+        DayBookmark(
+            id: cloud.id,
+            title: cloud.title,
+            notes: cloud.notes,
+            dayKey: cloud.dayKey,
+            createdAt: cloud.createdAt,
+            updatedAt: cloud.updatedAt,
+            deletedAt: cloud.deletedAt
+        )
     }
 
     private static func date(_ value: Any?) -> Date? {

@@ -23,10 +23,19 @@ enum SyncRecorder {
         upsert(kind: .log, recordKey: SyncKeys.log(taskId: taskId, dayKey: dayKey), deleted: true, changedAt: changedAt, in: context)
     }
 
+    static func bookmarkChanged(_ id: UUID, at changedAt: Date = Date(), in context: ModelContext) {
+        upsert(kind: .bookmark, recordKey: id.uuidString, deleted: false, changedAt: changedAt, in: context)
+    }
+
+    static func bookmarkDeleted(_ id: UUID, at changedAt: Date = Date(), in context: ModelContext) {
+        upsert(kind: .bookmark, recordKey: id.uuidString, deleted: true, changedAt: changedAt, in: context)
+    }
+
     /// Queues everything on this phone. Used once when a profile first meets local data.
     static func enqueueAll(in context: ModelContext) {
         let tasks = (try? context.fetch(FetchDescriptor<DailyTask>())) ?? []
         let logs = (try? context.fetch(FetchDescriptor<TaskDayLog>())) ?? []
+        let bookmarks = (try? context.fetch(FetchDescriptor<DayBookmark>())) ?? []
         for task in tasks {
             upsert(kind: .habit, recordKey: task.id.uuidString, deleted: false, changedAt: task.updatedAt, in: context, notify: false)
         }
@@ -36,6 +45,16 @@ enum SyncRecorder {
                 recordKey: SyncKeys.log(taskId: log.taskId, dayKey: log.dayKey),
                 deleted: false,
                 changedAt: log.updatedAt,
+                in: context,
+                notify: false
+            )
+        }
+        for bookmark in bookmarks {
+            upsert(
+                kind: .bookmark,
+                recordKey: bookmark.id.uuidString,
+                deleted: false,
+                changedAt: bookmark.updatedAt,
                 in: context,
                 notify: false
             )

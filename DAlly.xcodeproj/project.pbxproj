@@ -102,6 +102,8 @@
 		B50000000000000000000010 /* HabitIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50000000000000000000010 /* HabitIntents.swift */; };
 		B50000000000000000000011 /* DAllyShortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50000000000000000000011 /* DAllyShortcuts.swift */; };
 		B50000000000000000000013 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = F50000000000000000000013 /* GoogleService-Info.plist */; };
+		B50000000000000000000020 /* DayBookmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50000000000000000000020 /* DayBookmark.swift */; };
+		B50000000000000000000021 /* BookmarkEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50000000000000000000021 /* BookmarkEditorView.swift */; };
 		W50000000000000000000001 /* DailyTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA29E78C791887167A5FBD7F /* DailyTask.swift */; };
 		W50000000000000000000002 /* TaskDayLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 063FC3AE781B5FE2C3585CFD /* TaskDayLog.swift */; };
 		W50000000000000000000003 /* DayLogStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD43B509DC5789E577816BAD /* DayLogStatus.swift */; };
@@ -129,6 +131,7 @@
 		W50000000000000000000019 /* SyncRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50000000000000000000002 /* SyncRecorder.swift */; };
 		W5000000000000000000001A /* DAllyWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50000000000000000000014 /* DAllyWidgetBundle.swift */; };
 		W5000000000000000000001B /* TodayWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50000000000000000000015 /* TodayWidget.swift */; };
+		W5000000000000000000001C /* DayBookmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50000000000000000000020 /* DayBookmark.swift */; };
 		W1D6E7000000000000000009 /* DAllyWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = F50000000000000000000018 /* DAllyWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		P50000000000000000000021 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = P50000000000000000000011 /* FirebaseAuth */; };
 		P50000000000000000000022 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = P50000000000000000000012 /* FirebaseFirestore */; };
@@ -274,6 +277,8 @@
 		F50000000000000000000011 /* DAllyShortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DAllyShortcuts.swift; sourceTree = "<group>"; };
 		F50000000000000000000012 /* DAlly.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DAlly.entitlements; sourceTree = "<group>"; };
 		F50000000000000000000013 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		F50000000000000000000020 /* DayBookmark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayBookmark.swift; sourceTree = "<group>"; };
+		F50000000000000000000021 /* BookmarkEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarkEditorView.swift; sourceTree = "<group>"; };
 		F50000000000000000000014 /* DAllyWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DAllyWidgetBundle.swift; sourceTree = "<group>"; };
 		F50000000000000000000015 /* TodayWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayWidget.swift; sourceTree = "<group>"; };
 		F50000000000000000000016 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -415,6 +420,7 @@
 		19CA7C255CD248AAC7D2881A /* Day */ = {
 			isa = PBXGroup;
 			children = (
+				F50000000000000000000021 /* BookmarkEditorView.swift */,
 				DD4C645A8624E4AD01D11F23 /* CompletionPromptSheet.swift */,
 				328A134674E30B7CED5AB700 /* DayHeaderView.swift */,
 				6A903D0EE342EBCC39D3E2B3 /* DayPagerView.swift */,
@@ -573,6 +579,7 @@
 				7C3F169062A1C51EF736B9B1 /* MarkPattern.swift */,
 				E4FACA9880EA231365D6720D /* AppearanceMode.swift */,
 				FA29E78C791887167A5FBD7F /* DailyTask.swift */,
+				F50000000000000000000020 /* DayBookmark.swift */,
 				AD43B509DC5789E577816BAD /* DayLogStatus.swift */,
 				EFD39DC5A4C5E2B17B7F23AD /* OverdueReminderMode.swift */,
 				AC5F58D47898DE75E4386687 /* PriorityLevel.swift */,
@@ -761,6 +768,7 @@
 				C6A9F7675143D4F88F18BD6C /* DaySectionHeader.swift in Sources */,
 				7C0C54823046830740F7BE86 /* DayView.swift in Sources */,
 				53503E168B9E0F51CDBEE46A /* EmptyDayView.swift in Sources */,
+				B50000000000000000000021 /* BookmarkEditorView.swift in Sources */,
 				7F559EFCAA64098282D622DE /* TaskRowView.swift in Sources */,
 				1E8BF685773457F565F8D7F4 /* NotificationPrimingView.swift in Sources */,
 				C1E2ED954BAA8D3F3174A0F3 /* WelcomeView.swift in Sources */,
@@ -785,6 +793,7 @@
 				58196CEF7BAD2CDE97BCFC37 /* TimeOfDayPicker.swift in Sources */,
 				2EAD2061B3F9BFB083D31F71 /* AppearanceMode.swift in Sources */,
 				745B5943459DF8ECA90DDB83 /* DailyTask.swift in Sources */,
+				B50000000000000000000020 /* DayBookmark.swift in Sources */,
 				E0A545BFF16DE2D2653086CC /* RepeatKind.swift in Sources */,
 				B9656824780987410A2E3E22 /* MarkPattern.swift in Sources */,
 				7C9F0F3E28416F59C8C6C168 /* DayLogStatus.swift in Sources */,
@@ -839,6 +848,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				W50000000000000000000001 /* DailyTask.swift in Sources */,
+				W5000000000000000000001C /* DayBookmark.swift in Sources */,
 				W50000000000000000000002 /* TaskDayLog.swift in Sources */,
 				W50000000000000000000003 /* DayLogStatus.swift in Sources */,
 				W50000000000000000000004 /* RepeatKind.swift in Sources */,

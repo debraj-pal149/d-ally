@@ -8,15 +8,16 @@ enum ColorAssignmentService {
 
     static func nextUnused(existing: [DailyTask]) -> Assignment {
         let used = Set(existing.map { key(hex: $0.colorHex, pattern: $0.markPatternKind) })
+        let palette = TaskColorPalette.forHabits
         for pattern in MarkPattern.allCases {
-            for swatch in TaskColorPalette.all {
+            for swatch in palette {
                 let candidate = key(hex: swatch.hex, pattern: pattern)
                 if !used.contains(candidate) {
                     return Assignment(colorHex: swatch.hex, pattern: pattern)
                 }
             }
         }
-        let fallback = TaskColorPalette.all[existing.count % TaskColorPalette.all.count]
+        let fallback = palette[existing.count % palette.count]
         return Assignment(colorHex: fallback.hex, pattern: .solid)
     }
 

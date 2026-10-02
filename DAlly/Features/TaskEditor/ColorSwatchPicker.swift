@@ -8,7 +8,7 @@ struct ColorSwatchPicker: View {
             Text("Color")
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 10) {
-                    ForEach(TaskColorPalette.all) { swatch in
+                    ForEach(TaskColorPalette.forHabits) { swatch in
                         Circle()
                             .fill(swatch.color)
                             .frame(width: 32, height: 32)

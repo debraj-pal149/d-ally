@@ -7,8 +7,13 @@ struct DayView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \DailyTask.hour) private var tasks: [DailyTask]
     @Query private var logs: [TaskDayLog]
+    @Query private var bookmarks: [DayBookmark]
     @State private var stopTarget: DailyTask?
     @State private var confirmStop = false
+
+    private var dayBookmarks: [DayBookmark] {
+        DayBookmark.live(on: day, in: bookmarks)
+    }
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 60)) { context in
@@ -21,9 +26,10 @@ struct DayView: View {
             let kind = DaySectioningService.kind(of: day, now: context.date)
             let canResolve = kind != .future
             let hero = kind == .today ? heroPair(in: sections) : nil
+            let hasContent = !sections.isEmpty || !dayBookmarks.isEmpty
 
             Group {
-                if sections.isEmpty {
+                if !hasContent {
                     VStack(spacing: 12) {
                         if kind == .today, WeekReview.isSunday(context.date) {
                             WeekReviewBanner {
@@ -42,6 +48,15 @@ struct DayView: View {
                             if kind == .today, WeekReview.isSunday(context.date) {
                                 WeekReviewBanner {
                                     router.openCalendar()
+                                }
+                            }
+
+                            if !dayBookmarks.isEmpty {
+                                DaySectionHeader(title: AppCopy.calendarDayBookmarks)
+                                ForEach(dayBookmarks, id: \.id) { bookmark in
+                                    BookmarkRowView(bookmark: bookmark) {
+                                        router.openBookmarkEditor(bookmarkId: bookmark.id, day: day)
+                                    }
                                 }
                             }
 
@@ -159,6 +174,42 @@ struct DayView: View {
         SyncRecorder.habitChanged(task.id, at: now, in: modelContext)
         DayLogService.refreshAfterChange(context: modelContext)
         Haptics.delete()
+    }
+}
+
+struct BookmarkRowView: View {
+    var bookmark: DayBookmark
+    var onOpen: () -> Void
+    @Environment(\.colorScheme) private var scheme
+
+    var body: some View {
+        Button(action: onOpen) {
+            HStack(spacing: 12) {
+                Circle()
+                    .fill(scheme == .dark ? Color.white : Color.black)
+                    .frame(width: 10, height: 10)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(bookmark.title)
+                        .font(AppTypography.primary(16, weight: .semibold))
+                        .foregroundStyle(AppColors.textPrimary(scheme))
+                        .multilineTextAlignment(.leading)
+                    if !bookmark.notes.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                        Text(bookmark.notes)
+                            .font(AppTypography.footnote)
+                            .foregroundStyle(AppColors.textSecondary(scheme))
+                            .lineLimit(2)
+                            .multilineTextAlignment(.leading)
+                    }
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(AppColors.rowFill(scheme), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 }
 

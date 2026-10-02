@@ -10,14 +10,15 @@ struct DayCellView: View {
 
     private var isToday: Bool { Date.isSameLocalDay(day, Date()) }
     /// Single shared tint for any marked day — task identity lives in the dots, not the cell wash.
+    /// Bookmark-only days stay unwashed so the black/white dot is the only signal.
     private var wash: Color {
-        if !marks.dots.isEmpty { return AppColors.aqua }
+        if !marks.habitDots.isEmpty { return AppColors.aqua }
         if marks.skipOnly { return AppColors.textTertiary(scheme) }
         return .clear
     }
 
     private var washOpacity: Double {
-        if marks.dots.isEmpty { return marks.skipOnly ? 0.08 : 0 }
+        if marks.habitDots.isEmpty { return marks.skipOnly ? 0.08 : 0 }
         return scheme == .dark ? 0.16 : 0.12
     }
 
@@ -50,7 +51,7 @@ struct DayCellView: View {
                 .stroke(
                     isToday
                         ? AppColors.aqua.opacity(0.9)
-                        : wash.opacity(marks.dots.isEmpty ? (marks.skipOnly ? 0.2 : 0) : 0.35),
+                        : wash.opacity(marks.habitDots.isEmpty ? (marks.skipOnly ? 0.2 : 0) : 0.35),
                     lineWidth: isToday ? 1.5 : 1
                 )
         }
@@ -62,7 +63,9 @@ struct DayCellView: View {
 
     private var accessibilityMarks: String {
         if marks.skipOnly { return "skip" }
-        return marks.dots.map(\.hex).joined(separator: ",")
+        var parts = marks.habitDots.map(\.hex)
+        if marks.hasBookmark { parts.insert("bookmark", at: 0) }
+        return parts.joined(separator: ",")
     }
 
     @ViewBuilder
@@ -84,7 +87,11 @@ struct DayCellView: View {
                 )
                 LazyVGrid(columns: columns, alignment: .center, spacing: layout.spacing) {
                     ForEach(Array(marks.dots.enumerated()), id: \.offset) { _, dot in
-                        if marksStyle == .missed {
+                        if dot.isBookmark {
+                            Circle()
+                                .fill(scheme == .dark ? Color.white : Color.black)
+                                .frame(width: layout.dotSize, height: layout.dotSize)
+                        } else if marksStyle == .missed {
                             Circle()
                                 .strokeBorder(Color(hex: dot.hex), lineWidth: max(1, layout.dotSize * 0.22))
                                 .frame(width: layout.dotSize, height: layout.dotSize)

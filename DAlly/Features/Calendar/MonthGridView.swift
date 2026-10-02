@@ -21,9 +21,11 @@ struct MonthGridView: View {
     var selectedDay: Date?
     var tasks: [DailyTask]
     var logs: [TaskDayLog]
+    var bookmarks: [DayBookmark] = []
     var marksMode: CalendarMarksMode = .kept
     /// Empty means every habit. Non-empty limits kept, skipped, and missed marks to these tasks.
     var focusedTaskIds: Set<UUID> = []
+    var focusBookmarks: Bool = false
     var onSelect: (Date) -> Void
 
     private var calendar: Calendar { Calendar.current }
@@ -95,17 +97,31 @@ struct MonthGridView: View {
     private func marks(for day: Date) -> DayMarks {
         let today = Date().startOfLocalDay
         let dayStart = day.startOfLocalDay
-        if dayStart > today {
-            return DayMarks(dots: [], skipOnly: false)
-        }
 
         let byId = Dictionary(uniqueKeysWithValues: tasks.map { ($0.id, $0) })
         func included(_ task: DailyTask) -> Bool {
             focusedTaskIds.isEmpty || focusedTaskIds.contains(task.id)
         }
 
+        let showHabits = !focusBookmarks
+        let showBookmark = focusBookmarks || focusedTaskIds.isEmpty
+        let bookmarkDot: [MarkDot] = {
+            guard showBookmark,
+                  bookmarks.contains(where: { $0.isLive && $0.dayKey == day.localDayKey })
+            else { return [] }
+            return [.bookmark]
+        }()
+
+        // Future days: habit marks stay empty; bookmarks still show.
+        if dayStart > today {
+            return DayMarks(dots: bookmarkDot, skipOnly: false)
+        }
+
         switch marksMode {
         case .kept:
+            guard showHabits else {
+                return DayMarks(dots: bookmarkDot, skipOnly: false)
+            }
             let key = day.localDayKey
             let dayLogs = logs.filter { $0.dayKey == key }
             let kept = dayLogs.filter { $0.dayLogStatus == .kept }
@@ -120,13 +136,19 @@ struct MonthGridView: View {
                 }
             let skippedFocused = skipped.compactMap { byId[$0.taskId] }
                 .filter { $0.isLive && included($0) }
-            let dots = keptTasks.map { MarkDot(hex: $0.colorHex, pattern: $0.markPatternKind) }
-            return DayMarks(dots: dots, skipOnly: dots.isEmpty && !skippedFocused.isEmpty)
+            let habitDots = keptTasks.map { MarkDot(hex: $0.colorHex, pattern: $0.markPatternKind) }
+            return DayMarks(
+                dots: bookmarkDot + habitDots,
+                skipOnly: habitDots.isEmpty && bookmarkDot.isEmpty && !skippedFocused.isEmpty
+            )
 
         case .missed:
             // Missed only applies to past days (open logs after the day ended).
             guard dayStart < today else {
-                return DayMarks(dots: [], skipOnly: false)
+                return DayMarks(dots: bookmarkDot, skipOnly: false)
+            }
+            guard showHabits else {
+                return DayMarks(dots: bookmarkDot, skipOnly: false)
             }
             let active = TaskOccurrenceService.tasks(for: day, allTasks: tasks)
             let missed = active.filter {
@@ -138,10 +160,13 @@ struct MonthGridView: View {
                     if da != db { return da < db }
                     return a.name < b.name
                 }
-            let dots = missed.map { MarkDot(hex: $0.colorHex, pattern: $0.markPatternKind) }
-            return DayMarks(dots: dots, skipOnly: false)
+            let habitDots = missed.map { MarkDot(hex: $0.colorHex, pattern: $0.markPatternKind) }
+            return DayMarks(dots: bookmarkDot + habitDots, skipOnly: false)
 
         case .deleted:
+            guard showHabits else {
+                return DayMarks(dots: bookmarkDot, skipOnly: false)
+            }
             let key = day.localDayKey
             let dayLogs = logs.filter { $0.dayKey == key }
             let deletedTasks: (TaskDayLog) -> DailyTask? = { log in
@@ -160,8 +185,11 @@ struct MonthGridView: View {
                 }
             let skippedFocused = dayLogs.filter { $0.dayLogStatus == .skipped }
                 .compactMap(deletedTasks)
-            let dots = keptTasks.map { MarkDot(hex: $0.colorHex, pattern: $0.markPatternKind) }
-            return DayMarks(dots: dots, skipOnly: dots.isEmpty && !skippedFocused.isEmpty)
+            let habitDots = keptTasks.map { MarkDot(hex: $0.colorHex, pattern: $0.markPatternKind) }
+            return DayMarks(
+                dots: bookmarkDot + habitDots,
+                skipOnly: habitDots.isEmpty && bookmarkDot.isEmpty && !skippedFocused.isEmpty
+            )
         }
     }
 }
@@ -169,11 +197,19 @@ struct MonthGridView: View {
 struct MarkDot: Equatable {
     var hex: String
     var pattern: MarkPattern
+    /// Theme black/white day bookmark; not a habit color.
+    var isBookmark: Bool = false
+
+    static let bookmark = MarkDot(hex: "", pattern: .solid, isBookmark: true)
 }
 
 struct DayMarks {
     var dots: [MarkDot]
     var skipOnly: Bool
+
+    /// Habit-colored dots only (excludes the theme bookmark mark).
+    var habitDots: [MarkDot] { dots.filter { !$0.isBookmark } }
+    var hasBookmark: Bool { dots.contains(where: \.isBookmark) }
 }
 
 enum CalendarDotStyle {

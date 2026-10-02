@@ -8,6 +8,7 @@ struct TaskEditorView: View {
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.colorScheme) private var scheme
     @Environment(DeepLinkRouter.self) private var router
     @Query private var tasks: [DailyTask]
     @Query private var logs: [TaskDayLog]
@@ -61,69 +62,77 @@ struct TaskEditorView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                Group {
-                    Section {
-                        TextField("Name", text: $name)
-                    }
+            VStack(spacing: 0) {
+                if taskId == nil {
+                    createHeader
+                }
 
-                    Section {
-                        ScheduleKindPicker(kind: $kind)
-                        if kind == .fixedTime {
-                            TimeOfDayPicker(title: "Remind me at", hour: $hour, minute: $minute)
-                        } else {
-                            FlexibleWindowFields(
-                                completeHour: $windowEndHour,
-                                completeMinute: $windowEndMinute,
-                                nudgeHour: $hour,
-                                nudgeMinute: $minute
-                            )
+                Form {
+                    Group {
+                        Section {
+                            TextField("Name", text: $name)
+                        }
+
+                        Section {
+                            ScheduleKindPicker(kind: $kind)
+                            if kind == .fixedTime {
+                                TimeOfDayPicker(title: "Remind me at", hour: $hour, minute: $minute)
+                            } else {
+                                FlexibleWindowFields(
+                                    completeHour: $windowEndHour,
+                                    completeMinute: $windowEndMinute,
+                                    nudgeHour: $hour,
+                                    nudgeMinute: $minute
+                                )
+                            }
+                        }
+
+                        Section("Repeat") {
+                            RepeatPicker(option: $repeatOption, weeklyWeekdaysMask: $weeklyWeekdaysMask)
+                        }
+
+                        Section {
+                            ColorSwatchPicker(hex: $colorHex)
+                        }
+
+                        Section("Priority") {
+                            PriorityPicker(priority: $priority)
+                        }
+
+                        Section("Duration") {
+                            DurationPicker(untilStopped: $untilStopped, endDate: $endDate)
+                        }
+
+                        Section("If still open") {
+                            OverdueReminderPicker(mode: $overdueMode)
+                        }
+
+                        Section {
+                            NotesEditorField(notes: $notes)
+                        }
+
+                        Section {
+                            Toggle("Alerts for this reminder", isOn: $notificationsEnabled)
+                            NotificationPermissionFooter()
                         }
                     }
+                    .disabled(isDeleted)
 
-                    Section("Repeat") {
-                        RepeatPicker(option: $repeatOption, weeklyWeekdaysMask: $weeklyWeekdaysMask)
-                    }
-
-                    Section {
-                        ColorSwatchPicker(hex: $colorHex)
-                    }
-
-                    Section("Priority") {
-                        PriorityPicker(priority: $priority)
-                    }
-
-                    Section("Duration") {
-                        DurationPicker(untilStopped: $untilStopped, endDate: $endDate)
-                    }
-
-                    Section("If still open") {
-                        OverdueReminderPicker(mode: $overdueMode)
-                    }
-
-                    Section {
-                        NotesEditorField(notes: $notes)
-                    }
-
-                    Section {
-                        Toggle("Alerts for this reminder", isOn: $notificationsEnabled)
-                        NotificationPermissionFooter()
+                    if isDeleted {
+                        Section {
+                            Button(AppCopy.restoreReminder, action: restoreTask)
+                        }
+                    } else if existing != nil {
+                        Section {
+                            Button("Stop reminding", role: .destructive) { confirmStop = true }
+                            Button("Delete reminder", role: .destructive) { confirmDelete = true }
+                        }
                     }
                 }
-                .disabled(isDeleted)
-
-                if isDeleted {
-                    Section {
-                        Button(AppCopy.restoreReminder, action: restoreTask)
-                    }
-                } else if existing != nil {
-                    Section {
-                        Button("Stop reminding", role: .destructive) { confirmStop = true }
-                        Button("Delete reminder", role: .destructive) { confirmDelete = true }
-                    }
-                }
+                .contentMargins(.top, taskId == nil ? 14 : nil, for: .scrollContent)
             }
-            .navigationTitle(taskId == nil ? "New reminder" : "Edit reminder")
+            .background(Color(.systemGroupedBackground))
+            .navigationTitle(taskId == nil ? "New Task Reminder" : "Edit reminder")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -157,6 +166,37 @@ struct TaskEditorView: View {
             }
         }
         .presentationDetents([.large])
+        .presentationDragIndicator(.visible)
+        .presentationBackground(Color(.systemGroupedBackground))
+    }
+
+    private var createHeader: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text(AppCopy.reminderIntro)
+                .font(AppTypography.footnote)
+                .foregroundStyle(AppColors.textSecondary(scheme))
+                .fixedSize(horizontal: false, vertical: true)
+
+            Button {
+                let day = router.selectedDay
+                dismiss()
+                DispatchQueue.main.async {
+                    router.openBookmarkEditor(bookmarkId: nil, day: day)
+                }
+            } label: {
+                Text(AppCopy.createDayBookmark)
+                    .font(AppTypography.captionSemibold)
+                    .foregroundStyle(AppColors.aquaInk(scheme))
+                    .multilineTextAlignment(.leading)
+            }
+            .buttonStyle(.plain)
+            .padding(.top, 22)
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 8)
+        .padding(.bottom, 18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(.systemGroupedBackground))
     }
 
     private func loadIfNeeded() {
@@ -210,7 +250,7 @@ struct TaskEditorView: View {
             task.windowEndMinute = 0
         }
         task.priorityLevel = priority
-        task.colorHex = colorHex
+        task.colorHex = TaskColorPalette.habitSafeHex(colorHex)
         task.markPatternKind = markPattern
         task.repeatOption = repeatOption
         task.weeklyWeekdaysMask = repeatOption == .weekly ? weeklyWeekdaysMask : 0

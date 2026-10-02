@@ -10,6 +10,8 @@ struct TaskSwatch: Identifiable, Equatable {
 
 enum TaskColorPalette {
     /// Spaced around the hue wheel so neighbors stay distinct in calendar dots.
+    /// Never includes near-black or near-white — those are reserved for day bookmarks
+    /// (black in light mode, white in dark mode).
     static let all: [TaskSwatch] = [
         .init(index: 0, name: "Ember", hex: "#FF3B30"),
         .init(index: 1, name: "Orange", hex: "#FF9500"),
@@ -33,7 +35,51 @@ enum TaskColorPalette {
         .init(index: 19, name: "Wine", hex: "#9B1B30")
     ]
 
+    /// Habit picker and auto-assign. Same as `all` after dropping any reserved tones.
+    static var forHabits: [TaskSwatch] {
+        all.filter { !isReservedForBookmarks($0.hex) }
+    }
+
     static func swatch(hex: String) -> TaskSwatch {
-        all.first { $0.hex.caseInsensitiveCompare(hex) == .orderedSame } ?? all[0]
+        forHabits.first { $0.hex.caseInsensitiveCompare(hex) == .orderedSame }
+            ?? all.first { $0.hex.caseInsensitiveCompare(hex) == .orderedSame }
+            ?? forHabits[0]
+    }
+
+    /// True for pure / near black or white — bookmark calendar dots only.
+    static func isReservedForBookmarks(_ hex: String) -> Bool {
+        guard let rgb = rgbComponents(hex) else { return false }
+        let (r, g, b) = rgb
+        let maxC = max(r, g, b)
+        let minC = min(r, g, b)
+        // Near-black: all channels very low.
+        if maxC <= 0.12 { return true }
+        // Near-white: all channels very high.
+        if minC >= 0.92 { return true }
+        return false
+    }
+
+    /// Snap a synced or legacy value onto a habit-safe swatch.
+    static func habitSafeHex(_ hex: String) -> String {
+        if !isReservedForBookmarks(hex),
+           let match = forHabits.first(where: { $0.hex.caseInsensitiveCompare(hex) == .orderedSame }) {
+            return match.hex
+        }
+        if isReservedForBookmarks(hex) {
+            return forHabits[0].hex
+        }
+        // Unknown but not reserved (custom from an older build) — keep it.
+        return hex
+    }
+
+    private static func rgbComponents(_ hex: String) -> (Double, Double, Double)? {
+        let cleaned = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        guard cleaned.count == 6 else { return nil }
+        var int: UInt64 = 0
+        guard Scanner(string: cleaned).scanHexInt64(&int) else { return nil }
+        let r = Double((int >> 16) & 0xFF) / 255
+        let g = Double((int >> 8) & 0xFF) / 255
+        let b = Double(int & 0xFF) / 255
+        return (r, g, b)
     }
 }

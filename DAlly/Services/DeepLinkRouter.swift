@@ -22,6 +22,9 @@ final class DeepLinkRouter {
     var taskActionPrompt: TaskActionPrompt?
     var showTaskEditor: Bool = false
     var editingTaskId: UUID?
+    var showBookmarkEditor: Bool = false
+    var editingBookmarkId: UUID?
+    var bookmarkEditorDay: Date = Date().startOfLocalDay
     var showNotificationPriming: Bool = false
     var pendingKeepRemindingTaskId: UUID?
     /// When true, the next `.active` scene phase should not wipe navigation (notification deep link).
@@ -87,5 +90,11 @@ final class DeepLinkRouter {
     func openEditor(taskId: UUID?) {
         editingTaskId = taskId
         showTaskEditor = true
+    }
+
+    func openBookmarkEditor(bookmarkId: UUID?, day: Date) {
+        editingBookmarkId = bookmarkId
+        bookmarkEditorDay = day.startOfLocalDay
+        showBookmarkEditor = true
     }
 }

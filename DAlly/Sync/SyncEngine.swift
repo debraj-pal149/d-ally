@@ -31,10 +31,12 @@ final class SyncEngine {
     private var uid: String?
     private var habitListener: ListenerRegistration?
     private var logListener: ListenerRegistration?
+    private var bookmarkListener: ListenerRegistration?
     private var isPushing = false
     private var pushRequested = false
     private var habitsFromServer = false
     private var logsFromServer = false
+    private var bookmarksFromServer = false
 
     private var context: ModelContext { Persistence.shared.mainContext }
     private var db: Firestore { Firestore.firestore() }
@@ -48,9 +50,10 @@ final class SyncEngine {
         self.uid = uid
         habitsFromServer = false
         logsFromServer = false
+        bookmarksFromServer = false
 
         if !Self.mergeDone(uid: uid) {
-            let hasLocal = localHabitCount() > 0 || localLogCount() > 0
+            let hasLocal = localHabitCount() > 0 || localLogCount() > 0 || localBookmarkCount() > 0
             mergeInProgress = hasLocal
             if hasLocal {
                 Persistence.backupStore(label: "before-signin")
@@ -77,8 +80,10 @@ final class SyncEngine {
     private func stopListeners() {
         habitListener?.remove()
         logListener?.remove()
+        bookmarkListener?.remove()
         habitListener = nil
         logListener = nil
+        bookmarkListener = nil
     }
 
     // MARK: Merge bookkeeping
@@ -93,7 +98,7 @@ final class SyncEngine {
 
     private func finishMergeIfReady() {
         guard let uid, !Self.mergeDone(uid: uid) else { return }
-        guard habitsFromServer, logsFromServer else { return }
+        guard habitsFromServer, logsFromServer, bookmarksFromServer else { return }
         guard SyncRecorder.pending(in: context).isEmpty else { return }
         UserDefaults.standard.set(true, forKey: "syncMergeDone.\(uid)")
         UserDefaults.standard.set(uid, forKey: AppStorageKey.localDataOwnerUID)
@@ -113,12 +118,18 @@ final class SyncEngine {
         (try? context.fetchCount(FetchDescriptor<TaskDayLog>())) ?? 0
     }
 
+    func localBookmarkCount() -> Int {
+        (try? context.fetchCount(FetchDescriptor<DayBookmark>())) ?? 0
+    }
+
     /// Removes every habit and day on this phone. Used only after the person chose it.
     func wipeLocalData() {
         let tasks = (try? context.fetch(FetchDescriptor<DailyTask>())) ?? []
         let logs = (try? context.fetch(FetchDescriptor<TaskDayLog>())) ?? []
+        let bookmarks = (try? context.fetch(FetchDescriptor<DayBookmark>())) ?? []
         tasks.forEach(context.delete)
         logs.forEach(context.delete)
+        bookmarks.forEach(context.delete)
         try? context.save()
         SyncRecorder.clear(in: context)
         afterInbound()
@@ -187,6 +198,14 @@ final class SyncEngine {
             } else {
                 data = CloudCodec.logTombstone(taskId: parts.taskId, dayKey: parts.dayKey, deletedAt: entry.changedAt)
             }
+        case .bookmark:
+            guard let id = UUID(uuidString: entry.recordKey) else { return }
+            ref = base.collection("bookmarks").document(entry.recordKey)
+            if !entry.isTombstone, let bookmark = fetchBookmark(id) {
+                data = CloudCodec.bookmark(from: bookmark)
+            } else {
+                data = CloudCodec.bookmarkTombstone(id: id, deletedAt: entry.changedAt)
+            }
         }
 
         let localChangedAt = (data["updatedAt"] as? Date) ?? entry.changedAt
@@ -218,6 +237,11 @@ final class SyncEngine {
         logListener = base.collection("logs").addSnapshotListener(includeMetadataChanges: true) { [weak self] snapshot, error in
             Task { @MainActor in
                 self?.handleLogs(snapshot, error: error)
+            }
+        }
+        bookmarkListener = base.collection("bookmarks").addSnapshotListener(includeMetadataChanges: true) { [weak self] snapshot, error in
+            Task { @MainActor in
+                self?.handleBookmarks(snapshot, error: error)
             }
         }
     }
@@ -260,7 +284,7 @@ final class SyncEngine {
             try? context.save()
             afterInbound()
         }
-        noteSnapshot(fromCache: snapshot.metadata.isFromCache, habits: true)
+        noteSnapshot(fromCache: snapshot.metadata.isFromCache, kind: .habits)
     }
 
     private func handleLogs(_ snapshot: QuerySnapshot?, error: Error?) {
@@ -307,18 +331,62 @@ final class SyncEngine {
             try? context.save()
             afterInbound()
         }
-        noteSnapshot(fromCache: snapshot.metadata.isFromCache, habits: false)
+        noteSnapshot(fromCache: snapshot.metadata.isFromCache, kind: .logs)
     }
 
-    private func noteSnapshot(fromCache: Bool, habits: Bool) {
+    private func handleBookmarks(_ snapshot: QuerySnapshot?, error: Error?) {
+        guard let snapshot else {
+            if let error { state = Self.isOffline(error) ? .offline : .error(error.localizedDescription) }
+            return
+        }
+        var changed = false
+        for change in snapshot.documentChanges where change.type != .removed {
+            guard let cloud = CloudCodec.decodeBookmark(Self.normalize(change.document.data())) else { continue }
+            let pending = SyncRecorder.pendingChange(kind: .bookmark, recordKey: cloud.id.uuidString, in: context)
+            let local = fetchBookmark(cloud.id)
+            let decision = SyncMerge.decide(
+                localUpdatedAt: local?.updatedAt,
+                localPendingAt: pending?.changedAt,
+                remoteUpdatedAt: cloud.updatedAt
+            )
+            guard decision == .applyRemote else { continue }
+            if cloud.deletedAt != nil, cloud.title.isEmpty {
+                if let local {
+                    local.deletedAt = cloud.deletedAt
+                    local.updatedAt = cloud.updatedAt
+                    changed = true
+                }
+            } else if let local {
+                CloudCodec.apply(cloud, to: local)
+                changed = true
+            } else if !cloud.title.isEmpty {
+                context.insert(CloudCodec.makeBookmark(from: cloud))
+                changed = true
+            }
+            if let pending { context.delete(pending) }
+        }
+        if changed {
+            try? context.save()
+            afterInbound()
+        }
+        noteSnapshot(fromCache: snapshot.metadata.isFromCache, kind: .bookmarks)
+    }
+
+    private enum SnapshotKind { case habits, logs, bookmarks }
+
+    private func noteSnapshot(fromCache: Bool, kind: SnapshotKind) {
         if fromCache {
-            if habitsFromServer && logsFromServer, case .synced = state {
+            if habitsFromServer && logsFromServer && bookmarksFromServer, case .synced = state {
                 state = .offline
             }
             return
         }
-        if habits { habitsFromServer = true } else { logsFromServer = true }
-        if habitsFromServer && logsFromServer {
+        switch kind {
+        case .habits: habitsFromServer = true
+        case .logs: logsFromServer = true
+        case .bookmarks: bookmarksFromServer = true
+        }
+        if habitsFromServer && logsFromServer && bookmarksFromServer {
             if SyncRecorder.pending(in: context).isEmpty {
                 if case .error = state {} else { state = .synced(Date()) }
                 finishMergeIfReady()
@@ -337,7 +405,7 @@ final class SyncEngine {
 
     func deleteCloudData(uid: String) async throws {
         let base = db.collection("users").document(uid)
-        for name in ["habits", "logs"] {
+        for name in ["habits", "logs", "bookmarks"] {
             var last: DocumentSnapshot?
             while true {
                 var query = base.collection(name).order(by: FieldPath.documentID()).limit(to: 300)
@@ -358,6 +426,11 @@ final class SyncEngine {
 
     private func fetchTask(_ id: UUID) -> DailyTask? {
         let descriptor = FetchDescriptor<DailyTask>(predicate: #Predicate { $0.id == id })
+        return (try? context.fetch(descriptor))?.first
+    }
+
+    private func fetchBookmark(_ id: UUID) -> DayBookmark? {
+        let descriptor = FetchDescriptor<DayBookmark>(predicate: #Predicate { $0.id == id })
         return (try? context.fetch(descriptor))?.first
     }
 

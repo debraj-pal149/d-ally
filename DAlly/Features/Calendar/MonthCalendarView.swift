@@ -6,10 +6,20 @@ struct MonthCalendarView: View {
     @Environment(\.colorScheme) private var scheme
     @Query private var tasks: [DailyTask]
     @Query private var logs: [TaskDayLog]
+    @Query private var bookmarks: [DayBookmark]
     @State private var selectedDay: Date?
     @State private var showDetail = false
     @State private var marksMode: CalendarMarksMode = .kept
     @State private var focusedTaskIds: Set<UUID> = []
+    @State private var focusBookmarks = false
+
+    private var hasLiveBookmarks: Bool {
+        bookmarks.contains(where: \.isLive)
+    }
+
+    private var showsLegend: Bool {
+        !chipTasks.isEmpty || hasLiveBookmarks
+    }
 
     var body: some View {
         @Bindable var router = router
@@ -27,8 +37,10 @@ struct MonthCalendarView: View {
                         selectedDay: selectedDay,
                         tasks: tasks,
                         logs: logs,
+                        bookmarks: bookmarks,
                         marksMode: marksMode,
-                        focusedTaskIds: focusedTaskIds
+                        focusedTaskIds: focusedTaskIds,
+                        focusBookmarks: focusBookmarks
                     ) { day in
                         selectedDay = day
                         showDetail = true
@@ -47,13 +59,15 @@ struct MonthCalendarView: View {
 
                     VStack(alignment: .leading, spacing: 8) {
                         marksModeToggle
-                        if !chipTasks.isEmpty {
+                        if showsLegend {
                             legendChips
-                            Text(AppCopy.calendarFocusHint)
-                                .font(AppTypography.caption)
-                                .foregroundStyle(AppColors.textTertiary(scheme))
-                                .lineLimit(2)
-                                .minimumScaleFactor(0.85)
+                            if !chipTasks.isEmpty {
+                                Text(AppCopy.calendarFocusHint)
+                                    .font(AppTypography.caption)
+                                    .foregroundStyle(AppColors.textTertiary(scheme))
+                                    .lineLimit(2)
+                                    .minimumScaleFactor(0.85)
+                            }
                         }
                     }
                     .padding(.horizontal, 16)
@@ -66,7 +80,7 @@ struct MonthCalendarView: View {
             .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
             .sheet(isPresented: $showDetail) {
                 if let selectedDay {
-                    DayDetailSheet(day: selectedDay, tasks: tasks, logs: logs)
+                    DayDetailSheet(day: selectedDay, tasks: tasks, logs: logs, bookmarks: bookmarks)
                 }
             }
         }
@@ -79,6 +93,7 @@ struct MonthCalendarView: View {
                     withAnimation(.easeInOut(duration: 0.18)) {
                         marksMode = mode
                         focusedTaskIds = []
+                        focusBookmarks = false
                     }
                 } label: {
                     Text(mode.title)
@@ -143,10 +158,14 @@ struct MonthCalendarView: View {
     private var legendChips: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
+                if hasLiveBookmarks {
+                    bookmarkChip
+                }
                 ForEach(chipTasks, id: \.id) { task in
                     let selected = focusedTaskIds.contains(task.id)
                     Button {
                         withAnimation(.easeInOut(duration: 0.18)) {
+                            focusBookmarks = false
                             if selected {
                                 focusedTaskIds.remove(task.id)
                             } else {
@@ -184,6 +203,49 @@ struct MonthCalendarView: View {
                 }
             }
         }
+    }
+
+    private var bookmarkChip: some View {
+        Button {
+            withAnimation(.easeInOut(duration: 0.18)) {
+                if focusBookmarks {
+                    focusBookmarks = false
+                } else {
+                    focusedTaskIds = []
+                    focusBookmarks = true
+                }
+            }
+        } label: {
+            HStack(spacing: 6) {
+                if focusBookmarks {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(scheme == .dark ? Color.white : Color.black)
+                }
+                Circle()
+                    .fill(scheme == .dark ? Color.white : Color.black)
+                    .frame(width: 8, height: 8)
+                Text(AppCopy.calendarDayBookmarks)
+                    .font(AppTypography.caption)
+                    .lineLimit(1)
+                    .foregroundStyle(AppColors.textPrimary(scheme))
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(
+                (scheme == .dark ? Color.white : Color.black).opacity(focusBookmarks ? 0.22 : 0.1),
+                in: Capsule()
+            )
+            .overlay {
+                Capsule().stroke(
+                    (scheme == .dark ? Color.white : Color.black).opacity(focusBookmarks ? 0.7 : 0.35),
+                    lineWidth: 1
+                )
+            }
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(AppCopy.calendarDayBookmarks)
+        .accessibilityAddTraits(focusBookmarks ? .isSelected : [])
     }
 
     private var chipTasks: [DailyTask] {

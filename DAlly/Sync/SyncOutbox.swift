@@ -28,6 +28,7 @@ final class SyncOutbox {
 enum SyncRecordKind: String {
     case habit
     case log
+    case bookmark
 
     func key(for recordKey: String) -> String {
         "\(rawValue):\(recordKey)"
