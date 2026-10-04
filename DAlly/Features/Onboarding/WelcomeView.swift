@@ -34,6 +34,9 @@ struct WelcomeView: View {
                         welcomePoint(color: Color(hex: "#2CD4FF"), text: AppCopy.point1)
                         welcomePoint(color: Color(hex: "#2EE6A6"), text: AppCopy.point2)
                         welcomePoint(color: Color(hex: "#FF6B4A"), text: AppCopy.point3)
+
+                        welcomeBookmarkPoint
+                            .padding(.top, 12)
                     }
                     .padding(.top, 28)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -62,14 +65,27 @@ struct WelcomeView: View {
         .accessibilityElement(children: .contain)
     }
 
+    private var welcomeBookmarkPoint: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: "bookmark.fill")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(Color(hex: "#F2F2F7"))
+                .frame(width: 10, height: 14)
+            Text(AppCopy.pointBookmark)
+                .font(AppTypography.subheadline)
+                .foregroundStyle(Color(hex: "#F2F2F7"))
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
     private func welcomePoint(color: Color, text: String) -> some View {
-        HStack(alignment: .center, spacing: 12) {
+        HStack(alignment: .top, spacing: 12) {
             Circle().fill(color).frame(width: 10, height: 10)
+                .padding(.top, 4)
             Text(text)
                 .font(AppTypography.subheadline)
                 .foregroundStyle(Color(hex: "#F2F2F7"))
-                .lineLimit(1)
-                .minimumScaleFactor(0.85)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 

@@ -51,7 +51,7 @@ struct BookmarkEditorView: View {
                     }
 
                     Section {
-                        TextField("Title", text: $title)
+                        GrowingNameField(placeholder: "Title", text: $title)
                     }
 
                     Section {

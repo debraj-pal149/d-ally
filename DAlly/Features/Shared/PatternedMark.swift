@@ -81,3 +81,21 @@ private struct StripesShape: Shape {
         return path
     }
 }
+
+/// Theme black/white bookmark glyph, sized like a calendar habit dot.
+struct BookmarkMark: View {
+    var size: CGFloat = 8
+    @Environment(\.colorScheme) private var scheme
+
+    private var tint: Color {
+        scheme == .dark ? Color.white : Color.black
+    }
+
+    var body: some View {
+        Image(systemName: "bookmark.fill")
+            .font(.system(size: size * 0.95, weight: .semibold))
+            .foregroundStyle(tint)
+            .frame(width: size, height: size)
+            .accessibilityHidden(true)
+    }
+}

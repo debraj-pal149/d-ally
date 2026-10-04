@@ -51,15 +51,6 @@ struct DayView: View {
                                 }
                             }
 
-                            if !dayBookmarks.isEmpty {
-                                DaySectionHeader(title: AppCopy.calendarDayBookmarks)
-                                ForEach(dayBookmarks, id: \.id) { bookmark in
-                                    BookmarkRowView(bookmark: bookmark) {
-                                        router.openBookmarkEditor(bookmarkId: bookmark.id, day: day)
-                                    }
-                                }
-                            }
-
                             if let hero {
                                 TodayFocusCard(
                                     task: hero.task,
@@ -69,6 +60,15 @@ struct DayView: View {
                                     onSkip: { skip(hero.task) },
                                     onOpenActions: { router.openTaskActions(taskId: hero.task.id, day: day) }
                                 )
+                            }
+
+                            if !dayBookmarks.isEmpty {
+                                DaySectionHeader(title: AppCopy.calendarDayBookmarks)
+                                ForEach(dayBookmarks, id: \.id) { bookmark in
+                                    BookmarkRowView(bookmark: bookmark) {
+                                        router.openBookmarkEditor(bookmarkId: bookmark.id, day: day)
+                                    }
+                                }
                             }
 
                             ForEach(sections.filter { $0.id != .ended }) { section in
@@ -185,9 +185,7 @@ struct BookmarkRowView: View {
     var body: some View {
         Button(action: onOpen) {
             HStack(spacing: 12) {
-                Circle()
-                    .fill(scheme == .dark ? Color.white : Color.black)
-                    .frame(width: 10, height: 10)
+                BookmarkMark(size: 11)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(bookmark.title)
                         .font(AppTypography.primary(16, weight: .semibold))

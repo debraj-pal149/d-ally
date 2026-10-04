@@ -74,6 +74,7 @@
 		E31B8C120FA49697E2C1C0A0 /* String+HexColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA99C9B3890A9BC222111C6A /* String+HexColor.swift */; };
 		E5569221A4F67DC3F297F556 /* ColorSwatchPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 178B38A631DF0F2F0627A902 /* ColorSwatchPicker.swift */; };
 		F1A27C295F2FE6B1B5E6B5C0 /* NotesEditorField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A25475CB836EE575D4873CA0 /* NotesEditorField.swift */; };
+		B50000000000000000000022 /* GrowingNameField.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50000000000000000000022 /* GrowingNameField.swift */; };
 		F437171B89E86B4FFC70CC9E /* DaySectioningService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35C0FAABF9D2C047D21B6B73 /* DaySectioningService.swift */; };
 		F45A47B16709B8E0195418DF /* DayLogService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22B567F3CB8809302114C393 /* DayLogService.swift */; };
 		F4D0D2C3B0EBF71877D55935 /* TaskEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A762BDDF4A7EDED1BC46ABF2 /* TaskEditorView.swift */; };
@@ -93,6 +94,7 @@
 		B50000000000000000000007 /* HistoryExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50000000000000000000007 /* HistoryExport.swift */; };
 		B50000000000000000000008 /* ProfileSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50000000000000000000008 /* ProfileSetupView.swift */; };
 		B50000000000000000000009 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50000000000000000000009 /* ProfileView.swift */; };
+		B50000000000000000000023 /* CachedProfileAvatar.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50000000000000000000023 /* CachedProfileAvatar.swift */; };
 		B5000000000000000000000A /* MergeProgressSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5000000000000000000000A /* MergeProgressSheet.swift */; };
 		B5000000000000000000000B /* SignInButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5000000000000000000000B /* SignInButtons.swift */; };
 		B5000000000000000000000C /* SharedSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5000000000000000000000C /* SharedSettings.swift */; };
@@ -267,6 +269,7 @@
 		F50000000000000000000007 /* HistoryExport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryExport.swift; sourceTree = "<group>"; };
 		F50000000000000000000008 /* ProfileSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSetupView.swift; sourceTree = "<group>"; };
 		F50000000000000000000009 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
+		F50000000000000000000023 /* CachedProfileAvatar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedProfileAvatar.swift; sourceTree = "<group>"; };
 		F5000000000000000000000A /* MergeProgressSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MergeProgressSheet.swift; sourceTree = "<group>"; };
 		F5000000000000000000000B /* SignInButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInButtons.swift; sourceTree = "<group>"; };
 		F5000000000000000000000C /* SharedSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedSettings.swift; sourceTree = "<group>"; };
@@ -279,6 +282,7 @@
 		F50000000000000000000013 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		F50000000000000000000020 /* DayBookmark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayBookmark.swift; sourceTree = "<group>"; };
 		F50000000000000000000021 /* BookmarkEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarkEditorView.swift; sourceTree = "<group>"; };
+		F50000000000000000000022 /* GrowingNameField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GrowingNameField.swift; sourceTree = "<group>"; };
 		F50000000000000000000014 /* DAllyWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DAllyWidgetBundle.swift; sourceTree = "<group>"; };
 		F50000000000000000000015 /* TodayWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayWidget.swift; sourceTree = "<group>"; };
 		F50000000000000000000016 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -377,6 +381,7 @@
 			children = (
 				F50000000000000000000008 /* ProfileSetupView.swift */,
 				F50000000000000000000009 /* ProfileView.swift */,
+				F50000000000000000000023 /* CachedProfileAvatar.swift */,
 				F5000000000000000000000A /* MergeProgressSheet.swift */,
 				F5000000000000000000000B /* SignInButtons.swift */,
 			);
@@ -609,6 +614,7 @@
 				FF09A4EE719FC4084743607C /* DurationPicker.swift */,
 				810DE0095483D1D1B050E396 /* FlexibleWindowFields.swift */,
 				A25475CB836EE575D4873CA0 /* NotesEditorField.swift */,
+				F50000000000000000000022 /* GrowingNameField.swift */,
 				15DDE50A018CAE52915CF28C /* OverdueReminderPicker.swift */,
 				0BCF2065418D875C79F8CFB5 /* PriorityPicker.swift */,
 				F4BFABE38A101D4C8F7957AE /* ScheduleKindPicker.swift */,
@@ -785,6 +791,7 @@
 				7D96A0075A4C615576725961 /* DurationPicker.swift in Sources */,
 				0FAAA0250824F8FD99600747 /* FlexibleWindowFields.swift in Sources */,
 				F1A27C295F2FE6B1B5E6B5C0 /* NotesEditorField.swift in Sources */,
+				B50000000000000000000022 /* GrowingNameField.swift in Sources */,
 				97D51A978222520BDED6B90E /* OverdueReminderPicker.swift in Sources */,
 				05A27B39BC3FDB363BE97596 /* PriorityPicker.swift in Sources */,
 				3245ACB92DB129C133A69B63 /* ScheduleKindPicker.swift in Sources */,
@@ -832,6 +839,7 @@
 				B50000000000000000000007 /* HistoryExport.swift in Sources */,
 				B50000000000000000000008 /* ProfileSetupView.swift in Sources */,
 				B50000000000000000000009 /* ProfileView.swift in Sources */,
+				B50000000000000000000023 /* CachedProfileAvatar.swift in Sources */,
 				B5000000000000000000000A /* MergeProgressSheet.swift in Sources */,
 				B5000000000000000000000B /* SignInButtons.swift in Sources */,
 				B5000000000000000000000C /* SharedSettings.swift in Sources */,

@@ -17,8 +17,13 @@ struct MonthCalendarView: View {
         bookmarks.contains(where: \.isLive)
     }
 
+    /// Day-bookmark chip only on Kept — bookmarks are not part of Missed/Deleted.
+    private var showsBookmarkChip: Bool {
+        marksMode == .kept && hasLiveBookmarks
+    }
+
     private var showsLegend: Bool {
-        !chipTasks.isEmpty || hasLiveBookmarks
+        !chipTasks.isEmpty || showsBookmarkChip
     }
 
     var body: some View {
@@ -158,7 +163,7 @@ struct MonthCalendarView: View {
     private var legendChips: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
-                if hasLiveBookmarks {
+                if showsBookmarkChip {
                     bookmarkChip
                 }
                 ForEach(chipTasks, id: \.id) { task in
@@ -222,9 +227,7 @@ struct MonthCalendarView: View {
                         .font(.system(size: 10, weight: .bold))
                         .foregroundStyle(scheme == .dark ? Color.white : Color.black)
                 }
-                Circle()
-                    .fill(scheme == .dark ? Color.white : Color.black)
-                    .frame(width: 8, height: 8)
+                BookmarkMark(size: 9)
                 Text(AppCopy.calendarDayBookmarks)
                     .font(AppTypography.caption)
                     .lineLimit(1)

@@ -88,9 +88,7 @@ struct DayCellView: View {
                 LazyVGrid(columns: columns, alignment: .center, spacing: layout.spacing) {
                     ForEach(Array(marks.dots.enumerated()), id: \.offset) { _, dot in
                         if dot.isBookmark {
-                            Circle()
-                                .fill(scheme == .dark ? Color.white : Color.black)
-                                .frame(width: layout.dotSize, height: layout.dotSize)
+                            BookmarkMark(size: layout.dotSize)
                         } else if marksStyle == .missed {
                             Circle()
                                 .strokeBorder(Color(hex: dot.hex), lineWidth: max(1, layout.dotSize * 0.22))

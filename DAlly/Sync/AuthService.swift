@@ -143,6 +143,7 @@ final class AuthService {
             SyncEngine.shared.wipeLocalData()
             UserDefaults.standard.removeObject(forKey: AppStorageKey.localDataOwnerUID)
         }
+        ProfileAvatarCache.clearAll()
         GIDSignIn.sharedInstance.signOut()
         try Auth.auth().signOut()
     }
@@ -167,6 +168,7 @@ final class AuthService {
         }
         SyncEngine.clearMergeMarker(uid: firebaseUser.uid)
         UserDefaults.standard.removeObject(forKey: AppStorageKey.localDataOwnerUID)
+        ProfileAvatarCache.clearAll()
         GIDSignIn.sharedInstance.signOut()
     }
 

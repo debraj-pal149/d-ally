@@ -70,7 +70,7 @@ struct TaskEditorView: View {
                 Form {
                     Group {
                         Section {
-                            TextField("Name", text: $name)
+                            GrowingNameField(placeholder: "Name", text: $name)
                         }
 
                         Section {
@@ -184,10 +184,13 @@ struct TaskEditorView: View {
                     router.openBookmarkEditor(bookmarkId: nil, day: day)
                 }
             } label: {
-                Text(AppCopy.createDayBookmark)
-                    .font(AppTypography.captionSemibold)
-                    .foregroundStyle(AppColors.aquaInk(scheme))
-                    .multilineTextAlignment(.leading)
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Image(systemName: "bookmark.fill")
+                    Text(AppCopy.createDayBookmark)
+                        .multilineTextAlignment(.leading)
+                }
+                .font(AppTypography.secondary(14, weight: .semibold))
+                .foregroundStyle(AppColors.aquaInk(scheme))
             }
             .buttonStyle(.plain)
             .padding(.top, 22)

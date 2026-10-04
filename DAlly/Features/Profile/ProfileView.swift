@@ -115,15 +115,12 @@ struct ProfileView: View {
     @ViewBuilder
     private var avatar: some View {
         if let url = auth.user?.photoURL {
-            AsyncImage(url: url) { image in
-                image.resizable().scaledToFill()
-            } placeholder: {
+            CachedProfileAvatar(url: url, size: 52) {
                 avatarPlaceholder
             }
-            .frame(width: 52, height: 52)
-            .clipShape(Circle())
         } else {
             avatarPlaceholder
+                .frame(width: 52, height: 52)
         }
     }
 

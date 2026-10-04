@@ -27,9 +27,7 @@ struct DayDetailSheet: View {
                                 }
                             } label: {
                                 HStack(spacing: 10) {
-                                    Circle()
-                                        .fill(scheme == .dark ? Color.white : Color.black)
-                                        .frame(width: 8, height: 8)
+                                    BookmarkMark(size: 10)
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text(bookmark.title)
                                             .foregroundStyle(AppColors.textPrimary(scheme))

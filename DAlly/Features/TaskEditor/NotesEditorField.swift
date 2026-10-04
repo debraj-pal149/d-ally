@@ -7,7 +7,7 @@ struct NotesEditorField: View {
         VStack(alignment: .leading, spacing: 6) {
             Text("Notes")
             TextField("Optional notes", text: $notes, axis: .vertical)
-                .lineLimit(3...8)
+                .lineLimit(8, reservesSpace: false)
                 .onChange(of: notes) { _, new in
                     if new.count > AppDefaults.notesMaxLength {
                         notes = String(new.prefix(AppDefaults.notesMaxLength))

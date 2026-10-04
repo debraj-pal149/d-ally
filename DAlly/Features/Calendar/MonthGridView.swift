@@ -104,15 +104,16 @@ struct MonthGridView: View {
         }
 
         let showHabits = !focusBookmarks
-        let showBookmark = focusBookmarks || focusedTaskIds.isEmpty
+        // Day bookmarks belong on Kept only — not Missed or Deleted.
+        let showBookmark = marksMode == .kept && (focusBookmarks || focusedTaskIds.isEmpty)
         let bookmarkDot: [MarkDot] = {
-            guard showBookmark,
-                  bookmarks.contains(where: { $0.isLive && $0.dayKey == day.localDayKey })
-            else { return [] }
-            return [.bookmark]
+            guard showBookmark else { return [] }
+            let count = bookmarks.filter { $0.isLive && $0.dayKey == day.localDayKey }.count
+            guard count > 0 else { return [] }
+            return Array(repeating: .bookmark, count: count)
         }()
 
-        // Future days: habit marks stay empty; bookmarks still show.
+        // Future days: habit marks stay empty; bookmarks still show on Kept.
         if dayStart > today {
             return DayMarks(dots: bookmarkDot, skipOnly: false)
         }
@@ -143,16 +144,18 @@ struct MonthGridView: View {
             )
 
         case .missed:
-            // Missed only applies to past days (open logs after the day ended).
+            // Past days: open (missed) and explicitly skipped habits.
             guard dayStart < today else {
-                return DayMarks(dots: bookmarkDot, skipOnly: false)
+                return DayMarks(dots: [], skipOnly: false)
             }
             guard showHabits else {
-                return DayMarks(dots: bookmarkDot, skipOnly: false)
+                return DayMarks(dots: [], skipOnly: false)
             }
             let active = TaskOccurrenceService.tasks(for: day, allTasks: tasks)
-            let missed = active.filter {
-                included($0) && DayLogService.status(taskId: $0.id, day: day, logs: logs) == nil
+            let missedOrSkipped = active.filter { task in
+                guard included(task) else { return false }
+                let status = DayLogService.status(taskId: task.id, day: day, logs: logs)
+                return status == nil || status == .skipped
             }
                 .sorted { a, b in
                     let da = a.dueDate(on: day)
@@ -160,12 +163,12 @@ struct MonthGridView: View {
                     if da != db { return da < db }
                     return a.name < b.name
                 }
-            let habitDots = missed.map { MarkDot(hex: $0.colorHex, pattern: $0.markPatternKind) }
-            return DayMarks(dots: bookmarkDot + habitDots, skipOnly: false)
+            let habitDots = missedOrSkipped.map { MarkDot(hex: $0.colorHex, pattern: $0.markPatternKind) }
+            return DayMarks(dots: habitDots, skipOnly: false)
 
         case .deleted:
             guard showHabits else {
-                return DayMarks(dots: bookmarkDot, skipOnly: false)
+                return DayMarks(dots: [], skipOnly: false)
             }
             let key = day.localDayKey
             let dayLogs = logs.filter { $0.dayKey == key }
@@ -187,8 +190,8 @@ struct MonthGridView: View {
                 .compactMap(deletedTasks)
             let habitDots = keptTasks.map { MarkDot(hex: $0.colorHex, pattern: $0.markPatternKind) }
             return DayMarks(
-                dots: bookmarkDot + habitDots,
-                skipOnly: habitDots.isEmpty && bookmarkDot.isEmpty && !skippedFocused.isEmpty
+                dots: habitDots,
+                skipOnly: habitDots.isEmpty && !skippedFocused.isEmpty
             )
         }
     }
