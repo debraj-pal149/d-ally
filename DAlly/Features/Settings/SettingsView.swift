@@ -70,7 +70,7 @@ struct SettingsView: View {
                     .listRowBackground(settingsRowBackground)
 
                     Section("Defaults") {
-                        Picker("If still open", selection: $defaultOverdue) {
+                        Picker("If still open", selection: defaultOverdueBinding) {
                             ForEach(OverdueReminderMode.allCases) { mode in
                                 Text(mode.displayName).tag(mode.rawValue)
                             }
@@ -104,6 +104,14 @@ struct SettingsView: View {
                 NotificationSchedulingService.shared.rescheduleFromStore(context: modelContext)
             }
         }
+    }
+
+    /// Migrates retired `onceAfter10Minutes` stored defaults into the live enum.
+    private var defaultOverdueBinding: Binding<String> {
+        Binding(
+            get: { OverdueReminderMode.resolved(from: defaultOverdue).rawValue },
+            set: { defaultOverdue = $0 }
+        )
     }
 
     private var settingsRowBackground: some View {

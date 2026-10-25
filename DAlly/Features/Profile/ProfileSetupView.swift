@@ -64,6 +64,8 @@ struct ProfileSetupView: View {
     }
 
     private func finish() {
+        let authState = AuthService.shared.isSignedIn ? "signed_in" : "guest"
+        Analytics.track("onboarding_completed", ["auth_state": authState])
         hasCompletedOnboarding = true
     }
 }

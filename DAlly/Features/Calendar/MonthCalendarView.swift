@@ -49,6 +49,7 @@ struct MonthCalendarView: View {
                     ) { day in
                         selectedDay = day
                         showDetail = true
+                        Analytics.track("calendar_day_opened")
                     }
                     .padding(10)
                     .background {
@@ -100,6 +101,7 @@ struct MonthCalendarView: View {
                         focusedTaskIds = []
                         focusBookmarks = false
                     }
+                    Analytics.track("calendar_mode_changed", ["mode": mode.rawValue])
                 } label: {
                     Text(mode.title)
                         .font(AppTypography.captionSemibold)

@@ -78,13 +78,18 @@ struct SignInButtons: View {
             defer { busy = false }
             do {
                 try await work()
+                Analytics.track("sign_in_succeeded", [
+                    "provider": AuthService.shared.user?.providers.first ?? "unknown",
+                ])
                 onSignedIn()
             } catch let error as AuthError {
                 if error != .cancelled {
                     errorText = error.errorDescription
+                    Analytics.track("sign_in_failed", ["reason": "auth_error"])
                 }
             } catch {
                 errorText = error.localizedDescription
+                Analytics.track("sign_in_failed", ["reason": "unknown"])
             }
         }
     }

@@ -17,9 +17,13 @@ struct NotificationPrimingView: View {
 
                 Button {
                     Task {
-                        _ = await NotificationPermissionService.shared.request()
+                        let granted = await NotificationPermissionService.shared.request()
                         hasRequested = true
                         NotificationSchedulingService.shared.rescheduleFromStore(context: modelContext)
+                        await MainActor.run {
+                            Analytics.track("notif_priming_result", ["result": granted ? "allowed" : "denied"])
+                            Analytics.setNotificationsMaster(granted)
+                        }
                         dismiss()
                     }
                 } label: {
@@ -34,6 +38,7 @@ struct NotificationPrimingView: View {
 
                 Button(AppCopy.notNow) {
                     hasRequested = true
+                    Analytics.track("notif_priming_result", ["result": "not_now"])
                     dismiss()
                 }
                     .frame(maxWidth: .infinity)

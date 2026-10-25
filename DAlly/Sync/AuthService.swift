@@ -191,10 +191,13 @@ final class AuthService {
             user = nil
             handledUID = nil
             SyncEngine.shared.stop()
+            Analytics.resetIdentity()
             return
         }
         let appUser = Self.appUser(from: firebaseUser)
         user = appUser
+        let provider = appUser.providers.first ?? "unknown"
+        Analytics.identify(uid: appUser.uid, provider: provider)
         guard handledUID != firebaseUser.uid else { return }
         handledUID = firebaseUser.uid
         upsertProfile(appUser)

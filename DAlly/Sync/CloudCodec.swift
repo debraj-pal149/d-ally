@@ -65,7 +65,7 @@ enum CloudCodec {
             "markPattern": task.markPattern,
             "startDay": task.startDate.localDayKey,
             "isStopped": task.isStopped,
-            "overdueReminderMode": task.overdueReminderMode,
+            "overdueReminderMode": OverdueReminderMode.normalizedRawValue(task.overdueReminderMode),
             "createdAt": task.createdAt,
             "updatedAt": task.updatedAt,
             "sortOrder": task.sortOrder,
@@ -149,7 +149,7 @@ enum CloudCodec {
                 id: id, name: "", notes: "", scheduleKind: ScheduleKind.fixedTime.rawValue, hour: 9, minute: 0,
                 windowEndHour: 0, windowEndMinute: 0, priority: PriorityLevel.normal.rawValue, colorHex: "#2CD4FF",
                 markPattern: MarkPattern.solid.rawValue, startDay: "", endDay: nil, isStopped: true,
-                overdueReminderMode: OverdueReminderMode.onceAfter10Minutes.rawValue, createdAt: updatedAt,
+                overdueReminderMode: OverdueReminderMode.onceAfter30Minutes.rawValue, createdAt: updatedAt,
                 updatedAt: updatedAt, sortOrder: 0, notificationsEnabled: false, repeatKind: RepeatKind.daily.rawValue,
                 repeatIntervalDays: 2, weeklyWeekdaysMask: 0, deletedAt: deletedAt
             )
@@ -170,7 +170,9 @@ enum CloudCodec {
             startDay: startDay,
             endDay: data["endDay"] as? String,
             isStopped: data["isStopped"] as? Bool ?? false,
-            overdueReminderMode: data["overdueReminderMode"] as? String ?? OverdueReminderMode.onceAfter10Minutes.rawValue,
+            overdueReminderMode: OverdueReminderMode.normalizedRawValue(
+                data["overdueReminderMode"] as? String
+            ),
             createdAt: date(data["createdAt"]) ?? updatedAt,
             updatedAt: updatedAt,
             sortOrder: int(data["sortOrder"]) ?? 0,
@@ -239,7 +241,7 @@ enum CloudCodec {
         task.startDate = Date.date(fromDayKey: cloud.startDay)?.startOfLocalDay ?? task.startDate
         task.endDate = cloud.endDay.flatMap(Date.date(fromDayKey:))?.startOfLocalDay
         task.isStopped = cloud.isStopped
-        task.overdueReminderMode = cloud.overdueReminderMode
+        task.overdueReminderMode = OverdueReminderMode.normalizedRawValue(cloud.overdueReminderMode)
         task.createdAt = cloud.createdAt
         task.updatedAt = cloud.updatedAt
         task.sortOrder = cloud.sortOrder

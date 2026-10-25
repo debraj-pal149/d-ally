@@ -26,6 +26,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
         Task { @MainActor in
+            Analytics.configure()
             AuthService.shared.configure()
         }
         return true
@@ -100,12 +101,12 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         case NotificationIDs.actionDone:
             if let taskId, let dayKey, let day = Date.date(fromDayKey: dayKey) {
                 let context = ModelContext(Persistence.shared)
-                DayLogService.markKept(taskId: taskId, day: day, in: context)
+                DayLogService.markKept(taskId: taskId, day: day, in: context, source: "notification")
             }
         case NotificationIDs.actionSkip:
             if let taskId, let dayKey, let day = Date.date(fromDayKey: dayKey) {
                 let context = ModelContext(Persistence.shared)
-                DayLogService.markSkipped(taskId: taskId, day: day, in: context)
+                DayLogService.markSkipped(taskId: taskId, day: day, in: context, source: "notification")
             }
         default:
             if let urlString = info["url"] as? String, let url = URL(string: urlString) {

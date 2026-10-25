@@ -211,6 +211,14 @@ final class DayLogIndependenceTests: XCTestCase {
 final class SchedulingLogicTests: XCTestCase {
     @MainActor
     func testNoHourliesInsideQuietHours() {
+        // Ensure QuietHoursService matches AppDefaults (prior tests may disable quiet hours).
+        let d = UserDefaults.standard
+        d.set(true, forKey: AppStorageKey.quietHoursEnabled)
+        d.set(AppDefaults.quietHoursStartHour, forKey: AppStorageKey.quietHoursStartHour)
+        d.set(AppDefaults.quietHoursStartMinute, forKey: AppStorageKey.quietHoursStartMinute)
+        d.set(AppDefaults.quietHoursEndHour, forKey: AppStorageKey.quietHoursEndHour)
+        d.set(AppDefaults.quietHoursEndMinute, forKey: AppStorageKey.quietHoursEndMinute)
+
         let task = DailyTask(
             name: "Gym",
             scheduleKind: .fixedTime,
@@ -226,10 +234,107 @@ final class SchedulingLogicTests: XCTestCase {
         let now = Calendar.current.date(from: comps)!
         let items = NotificationSchedulingService.shared.notifications(for: task, day: day, dayKey: day.localDayKey, now: now)
         let quiet = QuietHours.appDefaults
-        for item in items where item.kind == "overdueHourly" {
+        for item in items where item.kind == "overdueRepeat" {
             XCTAssertFalse(quiet.isInQuietHours(at: item.fire), "hourly at \(item.fire) should not be in quiet hours")
         }
         XCTAssertTrue(items.contains { $0.kind == "ontime" })
+        // Due 21:00 → first hourly is 22:00, inside quiet (22–07), so all repeats may be dropped.
+    }
+
+    @MainActor
+    func testOverdueOnceIsThirtyMinutesAfterDue() {
+        clearQuietHoursForTest()
+        let task = DailyTask(
+            name: "Meds",
+            scheduleKind: .fixedTime,
+            hour: 9,
+            minute: 0,
+            colorHex: "#FF4D6D",
+            overdueReminderMode: .onceAfter30Minutes
+        )
+        let day = Date().startOfLocalDay
+        var comps = Calendar.current.dateComponents([.year, .month, .day], from: day)
+        comps.hour = 8
+        comps.minute = 0
+        let now = Calendar.current.date(from: comps)!
+        let items = NotificationSchedulingService.shared.notifications(
+            for: task, day: day, dayKey: day.localDayKey, now: now
+        )
+        let overdue = items.first { $0.kind == "overdueOnce" }
+        XCTAssertNotNil(overdue)
+        let due = task.dueDate(on: day)
+        XCTAssertEqual(overdue!.fire.timeIntervalSince(due), 30 * 60, accuracy: 1)
+    }
+
+    @MainActor
+    func testEveryOneHourSpacing() {
+        clearQuietHoursForTest()
+        let task = DailyTask(
+            name: "Water",
+            scheduleKind: .fixedTime,
+            hour: 8,
+            minute: 0,
+            colorHex: "#2CD4FF",
+            overdueReminderMode: .everyHourUntilDone
+        )
+        let day = Date().startOfLocalDay
+        var comps = Calendar.current.dateComponents([.year, .month, .day], from: day)
+        comps.hour = 7
+        comps.minute = 0
+        let now = Calendar.current.date(from: comps)!
+        let due = task.dueDate(on: day)
+        let fires = NotificationSchedulingService.shared.notifications(
+            for: task, day: day, dayKey: day.localDayKey, now: now
+        )
+        .filter { $0.kind == "overdueRepeat" }
+        .map(\.fire)
+        .sorted()
+
+        XCTAssertGreaterThanOrEqual(fires.count, 2)
+        XCTAssertEqual(fires[0].timeIntervalSince(due), 3600, accuracy: 1)
+        XCTAssertEqual(fires[1].timeIntervalSince(fires[0]), 3600, accuracy: 1)
+    }
+
+    @MainActor
+    func testEveryThreeHoursSpacing() {
+        clearQuietHoursForTest()
+        let task = DailyTask(
+            name: "Walk",
+            scheduleKind: .fixedTime,
+            hour: 8,
+            minute: 0,
+            colorHex: "#2EE6A6",
+            overdueReminderMode: .every3HoursUntilDone
+        )
+        let day = Date().startOfLocalDay
+        var comps = Calendar.current.dateComponents([.year, .month, .day], from: day)
+        comps.hour = 7
+        comps.minute = 0
+        let now = Calendar.current.date(from: comps)!
+        let due = task.dueDate(on: day)
+        let fires = NotificationSchedulingService.shared.notifications(
+            for: task, day: day, dayKey: day.localDayKey, now: now
+        )
+        .filter { $0.kind == "overdueRepeat" }
+        .map(\.fire)
+        .sorted()
+
+        XCTAssertFalse(fires.isEmpty)
+        XCTAssertEqual(fires.first!.timeIntervalSince(due), 3 * 3600, accuracy: 1)
+        for index in 1..<fires.count {
+            XCTAssertEqual(fires[index].timeIntervalSince(fires[index - 1]), 3 * 3600, accuracy: 1)
+        }
+    }
+
+    @MainActor
+    func testLegacyTenMinuteModeResolvesToThirty() {
+        XCTAssertEqual(
+            OverdueReminderMode.resolved(from: "onceAfter10Minutes"),
+            .onceAfter30Minutes
+        )
+        let task = DailyTask(name: "Legacy", colorHex: "#2CD4FF")
+        task.overdueReminderMode = "onceAfter10Minutes"
+        XCTAssertEqual(task.overdueMode, .onceAfter30Minutes)
     }
 
     @MainActor
@@ -248,7 +353,7 @@ final class SchedulingLogicTests: XCTestCase {
             hour: 22,
             minute: 0,
             colorHex: "#FF4D6D",
-            overdueReminderMode: .onceAfter10Minutes
+            overdueReminderMode: .onceAfter30Minutes
         )
         let day = Date().startOfLocalDay
         var comps = Calendar.current.dateComponents([.year, .month, .day], from: day)
@@ -260,6 +365,11 @@ final class SchedulingLogicTests: XCTestCase {
         XCTAssertNotNil(overdue)
         XCTAssertEqual(Calendar.current.component(.hour, from: overdue!.fire), 7)
         XCTAssertFalse(QuietHoursService.isInQuietHours(at: overdue!.fire))
+    }
+
+    private func clearQuietHoursForTest() {
+        let d = UserDefaults.standard
+        d.set(false, forKey: AppStorageKey.quietHoursEnabled)
     }
 }
 

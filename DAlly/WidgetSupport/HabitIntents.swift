@@ -51,9 +51,9 @@ enum HabitLogWriter {
         guard let task = tasks.first(where: { $0.id == taskId }) else { throw HabitLogError.missingHabit }
         switch status {
         case .kept:
-            DayLogService.markKept(taskId: task.id, day: Date().startOfLocalDay, in: context)
+            DayLogService.markKept(taskId: task.id, day: Date().startOfLocalDay, in: context, source: "widget")
         case .skipped:
-            DayLogService.markSkipped(taskId: task.id, day: Date().startOfLocalDay, in: context)
+            DayLogService.markSkipped(taskId: task.id, day: Date().startOfLocalDay, in: context, source: "widget")
         }
         WidgetCenter.shared.reloadAllTimelines()
         return task

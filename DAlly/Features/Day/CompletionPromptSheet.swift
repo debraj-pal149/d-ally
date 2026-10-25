@@ -78,7 +78,7 @@ struct CompletionPromptSheet: View {
                 if status != .kept {
                     Button {
                         let logDay = day.startOfLocalDay
-                        DayLogService.markKept(taskId: task.id, day: logDay, in: modelContext)
+                        DayLogService.markKept(taskId: task.id, day: logDay, in: modelContext, source: "prompt")
                         Haptics.markDone()
                         dismiss()
                     } label: {
@@ -222,7 +222,7 @@ struct CompletionPromptSheet: View {
                     tint: AppColors.warning
                 ) {
                     let logDay = day.startOfLocalDay
-                    DayLogService.markSkipped(taskId: task.id, day: logDay, in: modelContext)
+                    DayLogService.markSkipped(taskId: task.id, day: logDay, in: modelContext, source: "prompt")
                     Haptics.skip()
                     dismiss()
                 }
@@ -232,7 +232,7 @@ struct CompletionPromptSheet: View {
             items.append(
                 SecondaryAction(title: "Clear", systemImage: "arrow.uturn.backward", tint: AppColors.textSecondary(scheme)) {
                     let logDay = day.startOfLocalDay
-                    DayLogService.clearLog(taskId: task.id, day: logDay, in: modelContext)
+                    DayLogService.clearLog(taskId: task.id, day: logDay, in: modelContext, source: "prompt")
                     Haptics.undo()
                     dismiss()
                 }

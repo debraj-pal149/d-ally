@@ -29,5 +29,19 @@ struct MainTabView: View {
         }
         .tint(AppColors.aquaInk(scheme))
         .toolbarBackground(.ultraThinMaterial, for: .tabBar)
+        .onChange(of: router.selectedTab) { _, tab in
+            Analytics.track("tab_selected", ["tab": tab.analyticsName])
+        }
+    }
+}
+
+private extension AppTab {
+    var analyticsName: String {
+        switch self {
+        case .day: "day"
+        case .calendar: "calendar"
+        case .profile: "profile"
+        case .settings: "settings"
+        }
     }
 }

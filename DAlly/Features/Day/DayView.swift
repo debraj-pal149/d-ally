@@ -33,7 +33,7 @@ struct DayView: View {
                     VStack(spacing: 12) {
                         if kind == .today, WeekReview.isSunday(context.date) {
                             WeekReviewBanner {
-                                router.openCalendar()
+                                tapWeekReviewBanner()
                             }
                             .padding(.horizontal, 16)
                             .padding(.top, 8)
@@ -47,7 +47,7 @@ struct DayView: View {
                         LazyVStack(alignment: .leading, spacing: 10) {
                             if kind == .today, WeekReview.isSunday(context.date) {
                                 WeekReviewBanner {
-                                    router.openCalendar()
+                                    tapWeekReviewBanner()
                                 }
                             }
 
@@ -56,8 +56,8 @@ struct DayView: View {
                                     task: hero.task,
                                     section: hero.section,
                                     day: day,
-                                    onDone: { markKept(hero.task) },
-                                    onSkip: { skip(hero.task) },
+                                    onDone: { markKept(hero.task, source: "hero") },
+                                    onSkip: { skip(hero.task, source: "hero") },
                                     onOpenActions: { router.openTaskActions(taskId: hero.task.id, day: day) }
                                 )
                             }
@@ -101,8 +101,8 @@ struct DayView: View {
                                     day: day,
                                     logs: logs,
                                     canResolve: canResolve && kind != .future,
-                                    onToggleKept: markKept,
-                                    onSkip: skip,
+                                    onToggleKept: { markKept($0) },
+                                    onSkip: { skip($0) },
                                     onClear: clear,
                                     onOpenActions: { task in
                                         router.openTaskActions(taskId: task.id, day: day)
@@ -136,18 +136,23 @@ struct DayView: View {
         return nil
     }
 
-    private func markKept(_ task: DailyTask) {
+    private func tapWeekReviewBanner() {
+        Analytics.track("week_review_banner_tapped")
+        router.openCalendar()
+    }
+
+    private func markKept(_ task: DailyTask, source: String = "row") {
         let logDay = day.startOfLocalDay
         withAnimation(.spring(response: 0.35, dampingFraction: 0.86)) {
-            DayLogService.markKept(taskId: task.id, day: logDay, in: modelContext)
+            DayLogService.markKept(taskId: task.id, day: logDay, in: modelContext, source: source)
         }
         Haptics.markDone()
     }
 
-    private func skip(_ task: DailyTask) {
+    private func skip(_ task: DailyTask, source: String = "row") {
         let logDay = day.startOfLocalDay
         withAnimation(.spring(response: 0.35, dampingFraction: 0.86)) {
-            DayLogService.markSkipped(taskId: task.id, day: logDay, in: modelContext)
+            DayLogService.markSkipped(taskId: task.id, day: logDay, in: modelContext, source: source)
         }
         Haptics.skip()
     }
@@ -155,7 +160,7 @@ struct DayView: View {
     private func clear(_ task: DailyTask) {
         let logDay = day.startOfLocalDay
         withAnimation(.spring(response: 0.35, dampingFraction: 0.86)) {
-            DayLogService.clearLog(taskId: task.id, day: logDay, in: modelContext)
+            DayLogService.clearLog(taskId: task.id, day: logDay, in: modelContext, source: "row")
         }
         Haptics.undo()
     }
@@ -173,6 +178,8 @@ struct DayView: View {
         try? modelContext.save()
         SyncRecorder.habitChanged(task.id, at: now, in: modelContext)
         DayLogService.refreshAfterChange(context: modelContext)
+        Analytics.track("habit_editor_stopped", ["source": "day"])
+        Analytics.syncCounts(from: modelContext)
         Haptics.delete()
     }
 }

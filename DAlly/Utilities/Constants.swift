@@ -19,7 +19,7 @@ enum AppStorageKey {
 enum AppDefaults {
     static let appearanceMode = AppearanceMode.system.rawValue
     static let notificationsMasterEnabled = true
-    static let defaultOverdueMode = OverdueReminderMode.onceAfter10Minutes.rawValue
+    static let defaultOverdueMode = OverdueReminderMode.onceAfter30Minutes.rawValue
     static let quietHoursEnabled = true
     static let quietHoursStartHour = 22
     static let quietHoursStartMinute = 0
@@ -42,9 +42,15 @@ enum NotificationIDs {
     }
 
     static func overdueOnce(taskId: UUID, dayKey: String) -> String {
-        "overdue10.\(taskId.uuidString).\(dayKey)"
+        "overdueOnce.\(taskId.uuidString).\(dayKey)"
     }
 
+    static func overdueRepeat(taskId: UUID, dayKey: String, fire: Date) -> String {
+        let stamp = Self.hourlyStamp.string(from: fire)
+        return "overdueRepeat.\(taskId.uuidString).\(dayKey).\(stamp)"
+    }
+
+    /// Legacy hourly id — still matched when cancelling older pending alerts.
     static func overdueHourly(taskId: UUID, dayKey: String, fire: Date) -> String {
         let stamp = Self.hourlyStamp.string(from: fire)
         return "overdueHourly.\(taskId.uuidString).\(dayKey).\(stamp)"
@@ -56,7 +62,7 @@ enum NotificationIDs {
 
     static func parseTaskAndDay(from identifier: String) -> (UUID, String)? {
         let parts = identifier.split(separator: ".").map(String.init)
-        // ontime.UUID.dayKey  OR overdue10.UUID.dayKey OR overdueHourly.UUID.dayKey.stamp
+        // ontime.UUID.dayKey OR overdueOnce.UUID.dayKey OR overdueRepeat/Hourly.UUID.dayKey.stamp
         guard parts.count >= 3, let id = UUID(uuidString: parts[1]) else { return nil }
         return (id, parts[2])
     }

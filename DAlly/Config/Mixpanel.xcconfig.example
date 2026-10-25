@@ -1,0 +1,4 @@
+// Copy to Mixpanel.xcconfig (same folder). That file is gitignored.
+// These are Mixpanel project tokens, not the API secret.
+MIXPANEL_DEV_TOKEN =
+MIXPANEL_PROD_TOKEN =

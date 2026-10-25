@@ -68,6 +68,7 @@ playground.xcworkspace
 .env.*
 !.env.example
 DAlly/GoogleService-Info.plist
+DAlly/Config/Mixpanel.xcconfig
 *.pem
 AuthKey_*.p8
 *.mobileprovision

@@ -162,6 +162,9 @@ struct ProfileView: View {
             } else {
                 Button {
                     exportURL = try? HistoryExport.makeFile(tasks: tasks, logs: logs, bookmarks: bookmarks)
+                    if exportURL != nil {
+                        Analytics.track("history_exported")
+                    }
                 } label: {
                     Label(AppCopy.profileExport, systemImage: "square.and.arrow.up")
                         .foregroundStyle(AppColors.textPrimary(scheme))
@@ -229,6 +232,7 @@ struct ProfileView: View {
 
     private func signOut(keep: Bool) {
         do {
+            Analytics.track("sign_out", ["keep_local": keep ? "true" : "false"])
             try auth.signOut(keepLocalData: keep)
         } catch {
             alertText = error.localizedDescription
@@ -238,6 +242,7 @@ struct ProfileView: View {
     private func deleteAccount() {
         Task {
             do {
+                Analytics.track("account_deleted")
                 try await auth.deleteAccount()
             } catch {
                 alertText = (error as? AuthError)?.errorDescription ?? error.localizedDescription

@@ -123,6 +123,8 @@ struct BookmarkEditorView: View {
             SyncRecorder.bookmarkChanged(bookmark.id, at: now, in: modelContext)
         }
         DayLogService.refreshAfterChange(context: modelContext)
+        Analytics.track("bookmark_saved", ["mode": isCreate ? "create" : "edit"])
+        Analytics.syncCounts(from: modelContext)
         dismiss()
     }
 
@@ -134,6 +136,8 @@ struct BookmarkEditorView: View {
         try? modelContext.save()
         SyncRecorder.bookmarkChanged(existing.id, at: now, in: modelContext)
         DayLogService.refreshAfterChange(context: modelContext)
+        Analytics.track("bookmark_deleted")
+        Analytics.syncCounts(from: modelContext)
         dismiss()
     }
 }

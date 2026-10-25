@@ -3,6 +3,9 @@ import SwiftData
 import WidgetKit
 
 enum DayLogService {
+    /// App wires this to Mixpanel; widget leaves it nil.
+    nonisolated(unsafe) static var onAnalytics: ((String, String, Date) -> Void)?
+
     static func log(for taskId: UUID, day: Date, logs: [TaskDayLog]) -> TaskDayLog? {
         let key = day.startOfLocalDay.localDayKey
         return logs.first { $0.taskId == taskId && $0.dayKey == key }
@@ -18,7 +21,8 @@ enum DayLogService {
         day: Date,
         status: DayLogStatus,
         at resolvedAt: Date = Date(),
-        in context: ModelContext
+        in context: ModelContext,
+        source: String = "unknown"
     ) -> TaskDayLog {
         let key = day.startOfLocalDay.localDayKey
         let now = Date()
@@ -35,24 +39,44 @@ enum DayLogService {
         try? context.save()
         SyncRecorder.logChanged(taskId: taskId, dayKey: key, at: now, in: context)
         refreshAfterChange(context: context)
+        let statusName = status == .kept ? "kept" : "skipped"
+        onAnalytics?(statusName, source, day.startOfLocalDay)
         return row
     }
 
-    static func markKept(taskId: UUID, day: Date, at date: Date = Date(), in context: ModelContext) {
-        upsert(taskId: taskId, day: day.startOfLocalDay, status: .kept, at: date, in: context)
+    static func markKept(
+        taskId: UUID,
+        day: Date,
+        at date: Date = Date(),
+        in context: ModelContext,
+        source: String = "unknown"
+    ) {
+        upsert(taskId: taskId, day: day.startOfLocalDay, status: .kept, at: date, in: context, source: source)
     }
 
-    static func markSkipped(taskId: UUID, day: Date, at date: Date = Date(), in context: ModelContext) {
-        upsert(taskId: taskId, day: day.startOfLocalDay, status: .skipped, at: date, in: context)
+    static func markSkipped(
+        taskId: UUID,
+        day: Date,
+        at date: Date = Date(),
+        in context: ModelContext,
+        source: String = "unknown"
+    ) {
+        upsert(taskId: taskId, day: day.startOfLocalDay, status: .skipped, at: date, in: context, source: source)
     }
 
-    static func clearLog(taskId: UUID, day: Date, in context: ModelContext) {
+    static func clearLog(
+        taskId: UUID,
+        day: Date,
+        in context: ModelContext,
+        source: String = "unknown"
+    ) {
         let key = day.startOfLocalDay.localDayKey
         if let existing = fetchLog(taskId: taskId, dayKey: key, in: context) {
             context.delete(existing)
             try? context.save()
             SyncRecorder.logDeleted(taskId: taskId, dayKey: key, in: context)
             refreshAfterChange(context: context)
+            onAnalytics?("cleared", source, day.startOfLocalDay)
         }
     }
 

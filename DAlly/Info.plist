@@ -22,6 +22,10 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>MixpanelDevToken</key>
+	<string>$(MIXPANEL_DEV_TOKEN)</string>
+	<key>MixpanelProdToken</key>
+	<string>$(MIXPANEL_PROD_TOKEN)</string>
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
 		<string>com.debrajpal.dally.refresh</string>

@@ -56,6 +56,7 @@ final class DeepLinkRouter {
     func apply(url: URL) {
         suppressNextActiveReset = true
         guard url.scheme == "dally" else { return }
+        Analytics.track("deeplink_opened", ["host": url.host ?? "unknown"])
         switch url.host {
         case "day":
             selectedTab = .day

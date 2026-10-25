@@ -30,7 +30,7 @@ struct TaskEditorView: View {
     @State private var weeklyWeekdaysMask = WeeklyWeekdays.todayMask()
     @State private var untilStopped = true
     @State private var endDate = Date().startOfLocalDay
-    @State private var overdueMode: OverdueReminderMode = .onceAfter10Minutes
+    @State private var overdueMode: OverdueReminderMode = .onceAfter30Minutes
     @State private var notificationsEnabled = true
     @State private var confirmDelete = false
     @State private var confirmStop = false
@@ -143,7 +143,12 @@ struct TaskEditorView: View {
                         .disabled(!canSave || existing?.deletedAt != nil)
                 }
             }
-            .onAppear(perform: loadIfNeeded)
+            .onAppear {
+                loadIfNeeded()
+                Analytics.track("habit_editor_opened", [
+                    "mode": taskId == nil ? "create" : "edit",
+                ])
+            }
             .onChange(of: kind) { _, new in
                 if new == .flexibleUntil && hour == 9 && minute == 0 && existing == nil {
                     windowEndHour = 22
@@ -228,7 +233,7 @@ struct TaskEditorView: View {
             let assignment = ColorAssignmentService.nextUnused(existing: tasks)
             colorHex = assignment.colorHex
             markPattern = assignment.pattern
-            overdueMode = OverdueReminderMode(rawValue: defaultOverdueMode) ?? .onceAfter10Minutes
+            overdueMode = OverdueReminderMode.resolved(from: defaultOverdueMode)
             weeklyWeekdaysMask = WeeklyWeekdays.todayMask()
         }
     }
@@ -269,6 +274,14 @@ struct TaskEditorView: View {
         try? modelContext.save()
         SyncRecorder.habitChanged(task.id, at: now, in: modelContext)
         DayLogService.refreshAfterChange(context: modelContext)
+        Analytics.track("habit_editor_saved", [
+            "mode": isCreate ? "create" : "edit",
+            "repeat": repeatOption.id,
+        ])
+        if isCreate {
+            Analytics.peopleIncrement("lifetime_habits_created")
+        }
+        Analytics.syncCounts(from: modelContext)
         dismiss()
 
         if isCreate {
@@ -300,6 +313,8 @@ struct TaskEditorView: View {
         try? modelContext.save()
         SyncRecorder.habitChanged(task.id, at: now, in: modelContext)
         DayLogService.refreshAfterChange(context: modelContext)
+        Analytics.track("habit_editor_deleted")
+        Analytics.syncCounts(from: modelContext)
         dismiss()
     }
 
@@ -317,6 +332,8 @@ struct TaskEditorView: View {
         try? modelContext.save()
         SyncRecorder.habitChanged(task.id, at: now, in: modelContext)
         DayLogService.refreshAfterChange(context: modelContext)
+        Analytics.track("habit_editor_stopped")
+        Analytics.syncCounts(from: modelContext)
         Haptics.delete()
         dismiss()
     }
@@ -334,6 +351,8 @@ struct TaskEditorView: View {
         try? modelContext.save()
         SyncRecorder.habitChanged(task.id, at: now, in: modelContext)
         DayLogService.refreshAfterChange(context: modelContext)
+        Analytics.track("habit_editor_restored")
+        Analytics.syncCounts(from: modelContext)
         Haptics.markDone()
         dismiss()
     }

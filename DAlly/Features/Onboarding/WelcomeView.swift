@@ -90,6 +90,7 @@ struct WelcomeView: View {
     }
 
     private func begin() {
+        Analytics.track("welcome_continued")
         welcomeSeen = true
     }
 }

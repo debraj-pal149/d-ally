@@ -56,7 +56,7 @@ final class NotificationSchedulingService {
             windowEndHour: task.windowEndHour,
             windowEndMinute: task.windowEndMinute,
             dayKey: day.localDayKey,
-            kind: "overdueHourly"
+            kind: "overdueRepeat"
         )
         await add(item)
     }
@@ -88,9 +88,10 @@ final class NotificationSchedulingService {
         guard task.overdueMode != .off else { return result }
 
         switch task.overdueMode {
-        case .onceAfter10Minutes:
-            var candidate = due.addingTimeInterval(10 * 60)
-            // If the natural +10m fire fell inside quiet hours (even if that moment is already past),
+        case .onceAfter30Minutes:
+            guard let delay = task.overdueMode.onceDelay else { break }
+            var candidate = due.addingTimeInterval(delay)
+            // If the natural fire fell inside quiet hours (even if that moment is already past),
             // defer to quiet end so the user still gets one follow-up (plan §5A.2 / §13).
             if QuietHoursService.isInQuietHours(at: candidate) {
                 candidate = QuietHoursService.nextQuietEnd(after: candidate)
@@ -102,18 +103,19 @@ final class NotificationSchedulingService {
                 item.kind = "overdueOnce"
                 result.append(item)
             }
-        case .everyHourUntilDone:
-            var fire = due.addingTimeInterval(3600)
+        case .everyHourUntilDone, .every3HoursUntilDone:
+            guard let interval = task.overdueMode.repeatInterval else { break }
+            var fire = due.addingTimeInterval(interval)
             let dayEnd = day.endOfLocalDay
             while fire <= dayEnd {
                 if fire > now && !QuietHoursService.isInQuietHours(at: fire) {
                     var item = base
-                    item.identifier = NotificationIDs.overdueHourly(taskId: task.id, dayKey: dayKey, fire: fire)
+                    item.identifier = NotificationIDs.overdueRepeat(taskId: task.id, dayKey: dayKey, fire: fire)
                     item.fire = fire
-                    item.kind = "overdueHourly"
+                    item.kind = "overdueRepeat"
                     result.append(item)
                 }
-                fire = fire.addingTimeInterval(3600)
+                fire = fire.addingTimeInterval(interval)
             }
         case .off:
             break
@@ -281,7 +283,7 @@ final class NotificationSchedulingService {
                 return AppCopy.notifDueBy(completeBy)
             }
             return AppCopy.notifItsTime(taskName: item.taskName)
-        case "overdueOnce", "overdueHourly":
+        case "overdueOnce", "overdueRepeat", "overdueHourly":
             return AppCopy.notifStillOpen
         default:
             return AppCopy.notifStillOpen

@@ -46,7 +46,7 @@ final class DailyTask {
         startDate: Date = Date().startOfLocalDay,
         endDate: Date? = nil,
         isStopped: Bool = false,
-        overdueReminderMode: OverdueReminderMode = .onceAfter10Minutes,
+        overdueReminderMode: OverdueReminderMode = .onceAfter30Minutes,
         createdAt: Date = Date(),
         updatedAt: Date = Date(),
         sortOrder: Int = 0,
@@ -92,7 +92,7 @@ final class DailyTask {
     }
 
     var overdueMode: OverdueReminderMode {
-        get { OverdueReminderMode(rawValue: overdueReminderMode) ?? .onceAfter10Minutes }
+        get { OverdueReminderMode.resolved(from: overdueReminderMode) }
         set { overdueReminderMode = newValue.rawValue }
     }
 
