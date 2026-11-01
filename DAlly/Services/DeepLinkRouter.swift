@@ -13,6 +13,16 @@ struct TaskActionPrompt: Identifiable, Equatable {
     }
 }
 
+enum WeekReviewSource: String, Equatable {
+    case banner
+    case notification
+}
+
+struct WeekReviewRequest: Identifiable, Equatable {
+    let id = UUID()
+    let source: WeekReviewSource
+}
+
 @Observable
 final class DeepLinkRouter {
     var selectedTab: AppTab = .day
@@ -27,6 +37,7 @@ final class DeepLinkRouter {
     var bookmarkEditorDay: Date = Date().startOfLocalDay
     var showNotificationPriming: Bool = false
     var pendingKeepRemindingTaskId: UUID?
+    var pendingWeekReview: WeekReviewRequest?
     /// When true, the next `.active` scene phase should not wipe navigation (notification deep link).
     var suppressNextActiveReset: Bool = false
 
@@ -48,9 +59,12 @@ final class DeepLinkRouter {
         taskActionPrompt = TaskActionPrompt(taskId: taskId, day: day)
     }
 
-    func openCalendar(month: Date = Date()) {
+    func openCalendar(month: Date = Date(), reviewSource: WeekReviewSource? = nil) {
         selectedTab = .calendar
         calendarMonth = month.startOfLocalDay
+        if let reviewSource {
+            pendingWeekReview = WeekReviewRequest(source: reviewSource)
+        }
     }
 
     func apply(url: URL) {
@@ -75,7 +89,9 @@ final class DeepLinkRouter {
                 }
             }
         case "calendar":
-            openCalendar()
+            let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
+            let review = items.first(where: { $0.name == "review" })?.value
+            openCalendar(reviewSource: review == "notification" ? .notification : nil)
         case "settings":
             selectedTab = .settings
         case "profile":

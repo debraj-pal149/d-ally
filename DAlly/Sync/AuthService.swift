@@ -70,6 +70,15 @@ final class AuthService {
 
     func configure() {
         guard listenerHandle == nil else { return }
+        let projectID = FirebaseApp.app()?.options.projectID
+        let boundProject = UserDefaults.standard.string(forKey: AppStorageKey.firebaseProjectID)
+        if boundProject != projectID {
+            // Old project's session cannot write to the new one. Habits stay on the phone.
+            try? signOut(keepLocalData: true)
+            if let projectID {
+                UserDefaults.standard.set(projectID, forKey: AppStorageKey.firebaseProjectID)
+            }
+        }
         if let clientID = FirebaseApp.app()?.options.clientID {
             GIDSignIn.sharedInstance.configuration = GIDConfiguration(clientID: clientID)
         }
@@ -215,10 +224,10 @@ final class AuthService {
     }
 
     private func upsertProfile(_ appUser: AppUser) {
+        // Do not upload UIDevice.current.name — device names are often personal.
         var data: [String: Any] = [
             "providers": appUser.providers,
             "updatedAt": Date(),
-            "lastDevice": UIDevice.current.name,
             "schema": CloudCodec.schemaVersion,
         ]
         if let displayName = appUser.displayName { data["displayName"] = displayName }

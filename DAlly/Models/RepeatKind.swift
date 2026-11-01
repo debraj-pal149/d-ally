@@ -4,6 +4,8 @@ enum RepeatKind: String, Codable, CaseIterable, Identifiable {
     case daily
     case everyNDays
     case weekly
+    case monthly
+    case yearly
 
     var id: String { rawValue }
 
@@ -12,6 +14,8 @@ enum RepeatKind: String, Codable, CaseIterable, Identifiable {
         case .daily: "Daily"
         case .everyNDays: "Every few days"
         case .weekly: "Weekly"
+        case .monthly: "Monthly"
+        case .yearly: "Yearly"
         }
     }
 }
@@ -21,6 +25,8 @@ enum RepeatOption: Hashable, Identifiable {
     case every2Days
     case every3Days
     case weekly
+    case monthly
+    case yearly
 
     var id: String {
         switch self {
@@ -28,6 +34,8 @@ enum RepeatOption: Hashable, Identifiable {
         case .every2Days: "every2"
         case .every3Days: "every3"
         case .weekly: "weekly"
+        case .monthly: "monthly"
+        case .yearly: "yearly"
         }
     }
 
@@ -37,6 +45,8 @@ enum RepeatOption: Hashable, Identifiable {
         case .every2Days: "Every 2 days"
         case .every3Days: "Every 3 days"
         case .weekly: "Weekly"
+        case .monthly: "Monthly, on this date"
+        case .yearly: "Yearly, on this date"
         }
     }
 
@@ -45,6 +55,8 @@ enum RepeatOption: Hashable, Identifiable {
         case .daily: .daily
         case .every2Days, .every3Days: .everyNDays
         case .weekly: .weekly
+        case .monthly: .monthly
+        case .yearly: .yearly
         }
     }
 
@@ -55,10 +67,16 @@ enum RepeatOption: Hashable, Identifiable {
         }
     }
 
+    static var pickerOptions: [RepeatOption] {
+        [.daily, .every2Days, .every3Days, .weekly, .monthly, .yearly]
+    }
+
     static func from(kind: RepeatKind, intervalDays: Int) -> RepeatOption {
         switch kind {
         case .daily: return .daily
         case .weekly: return .weekly
+        case .monthly: return .monthly
+        case .yearly: return .yearly
         case .everyNDays:
             return intervalDays >= 3 ? .every3Days : .every2Days
         }
@@ -121,5 +139,51 @@ enum WeeklyWeekdays {
         if selected.isEmpty { return "No days" }
         if selected.count == 7 { return "Every day" }
         return selected.map(\.shortLabel).joined(separator: ", ")
+    }
+}
+
+/// Monthly / yearly "on this date" matching, clamped to the last day of the month when needed.
+enum RepeatDateMatch {
+    static func monthly(day: Date, anchor: Date, calendar: Calendar = .current) -> Bool {
+        let dayStart = day.startOfLocalDay
+        let start = anchor.startOfLocalDay
+        guard dayStart >= start else { return false }
+        let wanted = calendar.component(.day, from: start)
+        return calendar.component(.day, from: dayStart) == clampedDay(wanted, inSameMonthAs: dayStart, calendar: calendar)
+    }
+
+    static func yearly(day: Date, anchor: Date, calendar: Calendar = .current) -> Bool {
+        let dayStart = day.startOfLocalDay
+        let start = anchor.startOfLocalDay
+        guard dayStart >= start else { return false }
+        guard calendar.component(.month, from: dayStart) == calendar.component(.month, from: start) else {
+            return false
+        }
+        let wanted = calendar.component(.day, from: start)
+        return calendar.component(.day, from: dayStart) == clampedDay(wanted, inSameMonthAs: dayStart, calendar: calendar)
+    }
+
+    static func clampedDay(_ day: Int, inSameMonthAs date: Date, calendar: Calendar = .current) -> Int {
+        let range = calendar.range(of: .day, in: .month, for: date) ?? 1..<32
+        return min(max(day, 1), range.count)
+    }
+
+    static func monthlyCaption(anchor: Date, calendar: Calendar = .current) -> String {
+        let day = calendar.component(.day, from: anchor.startOfLocalDay)
+        return "Every month on the \(dayOrdinal(day))"
+    }
+
+    static func yearlyCaption(anchor: Date, calendar: Calendar = .current) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = .current
+        formatter.setLocalizedDateFormatFromTemplate("dMMM")
+        return "Every year on \(formatter.string(from: anchor.startOfLocalDay))"
+    }
+
+    private static func dayOrdinal(_ day: Int) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .ordinal
+        formatter.locale = .current
+        return formatter.string(from: NSNumber(value: day)) ?? "\(day)"
     }
 }

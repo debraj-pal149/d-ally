@@ -24,7 +24,7 @@ final class DailyTask {
     var notificationsEnabled: Bool
     /// Soft-delete timestamp. History stays; the habit leaves live Day/Calendar lists.
     var deletedAt: Date?
-    /// daily | everyNDays | weekly
+    /// daily | everyNDays | weekly | monthly | yearly
     var repeatKind: String = RepeatKind.daily.rawValue
     /// Used when repeatKind == everyNDays (2 or 3).
     var repeatIntervalDays: Int = 2
@@ -164,6 +164,10 @@ final class DailyTask {
         case .weekly:
             let weekday = Calendar.current.component(.weekday, from: dayStart)
             return WeeklyWeekdays.contains(mask: weeklyWeekdaysMask, weekday: weekday)
+        case .monthly:
+            return RepeatDateMatch.monthly(day: dayStart, anchor: start)
+        case .yearly:
+            return RepeatDateMatch.yearly(day: dayStart, anchor: start)
         }
     }
 
@@ -190,6 +194,10 @@ final class DailyTask {
             return "Every \(max(repeatIntervalDays, 2)) days"
         case .weekly:
             return WeeklyWeekdays.summary(mask: weeklyWeekdaysMask)
+        case .monthly:
+            return RepeatDateMatch.monthlyCaption(anchor: startDate)
+        case .yearly:
+            return RepeatDateMatch.yearlyCaption(anchor: startDate)
         }
     }
 

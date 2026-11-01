@@ -32,6 +32,7 @@ struct CloudLog: Equatable {
     var taskId: UUID
     var dayKey: String
     var status: String
+    var notes: String
     var resolvedAt: Date
     var updatedAt: Date
     var deletedAt: Date?
@@ -98,6 +99,7 @@ enum CloudCodec {
             "taskId": log.taskId.uuidString,
             "dayKey": log.dayKey,
             "status": log.status,
+            "notes": log.notes,
             "resolvedAt": log.resolvedAt,
             "updatedAt": log.updatedAt,
             "schema": schemaVersion,
@@ -192,6 +194,7 @@ enum CloudCodec {
             taskId: taskId,
             dayKey: dayKey,
             status: data["status"] as? String ?? DayLogStatus.kept.rawValue,
+            notes: data["notes"] as? String ?? "",
             resolvedAt: date(data["resolvedAt"]) ?? updatedAt,
             updatedAt: updatedAt,
             deletedAt: date(data["deletedAt"])

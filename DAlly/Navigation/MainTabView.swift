@@ -29,6 +29,7 @@ struct MainTabView: View {
         }
         .tint(AppColors.aquaInk(scheme))
         .toolbarBackground(.ultraThinMaterial, for: .tabBar)
+        .dayCoachHost()
         .onChange(of: router.selectedTab) { _, tab in
             Analytics.track("tab_selected", ["tab": tab.analyticsName])
         }

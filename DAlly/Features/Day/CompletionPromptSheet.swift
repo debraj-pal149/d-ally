@@ -13,6 +13,9 @@ struct CompletionPromptSheet: View {
     @Query private var logs: [TaskDayLog]
 
     @State private var contentHeight: CGFloat = 240
+    @State private var noteDraft = ""
+    @State private var noteSaveTask: Task<Void, Never>?
+    @FocusState private var noteFocused: Bool
 
     private var task: DailyTask? { tasks.first { $0.id == taskId } }
 
@@ -77,6 +80,7 @@ struct CompletionPromptSheet: View {
             if canResolve {
                 if status != .kept {
                     Button {
+                        commitNote()
                         let logDay = day.startOfLocalDay
                         DayLogService.markKept(taskId: task.id, day: logDay, in: modelContext, source: "prompt")
                         Haptics.markDone()
@@ -121,7 +125,10 @@ struct CompletionPromptSheet: View {
                 }
             }
 
+            dayNoteEditor
+
             Button {
+                commitNote()
                 let id = task.id
                 dismiss()
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
@@ -139,11 +146,69 @@ struct CompletionPromptSheet: View {
         .padding(.top, 12)
         .padding(.bottom, 6)
         .fixedSize(horizontal: false, vertical: true)
+        .onAppear {
+            noteDraft = DayLogService.notes(taskId: task.id, day: day, logs: logs)
+        }
+        .onDisappear {
+            noteSaveTask?.cancel()
+            commitNote()
+        }
         .onGeometryChange(for: CGFloat.self) { proxy in
             proxy.size.height
         } action: { newHeight in
             updateHeight(newHeight)
         }
+    }
+
+    private var dayNoteEditor: some View {
+        TextField(
+            "",
+            text: $noteDraft,
+            prompt: Text(AppCopy.dayNotePlaceholder)
+                .font(AppTypography.body)
+                .foregroundStyle(AppColors.textSecondary(scheme)),
+            axis: .vertical
+        )
+        .font(AppTypography.body)
+        .foregroundStyle(AppColors.textPrimary(scheme))
+        .lineLimit(4...12)
+        .focused($noteFocused)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .frame(minHeight: 96, alignment: .topLeading)
+        .background(AppColors.rowFill(scheme), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(AppColors.textTertiary(scheme).opacity(0.35), lineWidth: 1)
+        }
+        .onChange(of: noteDraft) { _, new in
+            if new.count > AppDefaults.notesMaxLength {
+                noteDraft = String(new.prefix(AppDefaults.notesMaxLength))
+                return
+            }
+            scheduleNoteSave()
+        }
+    }
+
+    private func scheduleNoteSave() {
+        noteSaveTask?.cancel()
+        noteSaveTask = Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(400))
+            guard !Task.isCancelled else { return }
+            commitNote()
+        }
+    }
+
+    private func commitNote() {
+        let current = DayLogService.notes(taskId: taskId, day: day, logs: logs)
+        guard noteDraft != current else { return }
+        DayLogService.setNotes(
+            taskId: taskId,
+            day: day.startOfLocalDay,
+            notes: noteDraft,
+            in: modelContext,
+            source: "prompt"
+        )
     }
 
     private func updateHeight(_ measured: CGFloat) {
@@ -221,6 +286,7 @@ struct CompletionPromptSheet: View {
                     systemImage: "forward.fill",
                     tint: AppColors.warning
                 ) {
+                    commitNote()
                     let logDay = day.startOfLocalDay
                     DayLogService.markSkipped(taskId: task.id, day: logDay, in: modelContext, source: "prompt")
                     Haptics.skip()
@@ -231,6 +297,7 @@ struct CompletionPromptSheet: View {
         if status != nil {
             items.append(
                 SecondaryAction(title: "Clear", systemImage: "arrow.uturn.backward", tint: AppColors.textSecondary(scheme)) {
+                    commitNote()
                     let logDay = day.startOfLocalDay
                     DayLogService.clearLog(taskId: task.id, day: logDay, in: modelContext, source: "prompt")
                     Haptics.undo()
@@ -241,6 +308,7 @@ struct CompletionPromptSheet: View {
         if showRemindAgain {
             items.append(
                 SecondaryAction(title: "Remind me again", systemImage: "bell.badge", tint: AppColors.aquaInk(scheme)) {
+                    commitNote()
                     Task {
                         await NotificationSchedulingService.shared.scheduleKeepReminding(task: task, day: day)
                     }

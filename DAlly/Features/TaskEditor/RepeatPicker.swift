@@ -3,11 +3,13 @@ import SwiftUI
 struct RepeatPicker: View {
     @Binding var option: RepeatOption
     @Binding var weeklyWeekdaysMask: Int
+    /// Anchor day for monthly / yearly captions (habit start date).
+    var anchorDate: Date = Date()
     @Environment(\.colorScheme) private var scheme
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            ForEach([RepeatOption.daily, .every2Days, .every3Days, .weekly]) { item in
+            ForEach(RepeatOption.pickerOptions) { item in
                 cadenceRow(item)
             }
 
@@ -35,8 +37,8 @@ struct RepeatPicker: View {
                     Text(item.title)
                         .font(AppTypography.button)
                         .foregroundStyle(AppColors.textPrimary(scheme))
-                    if item == .weekly, selected {
-                        Text(WeeklyWeekdays.summary(mask: weeklyWeekdaysMask))
+                    if selected, let caption = selectedCaption(for: item) {
+                        Text(caption)
                             .font(AppTypography.caption)
                             .foregroundStyle(AppColors.textSecondary(scheme))
                     }
@@ -48,6 +50,19 @@ struct RepeatPicker: View {
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(selected ? .isSelected : [])
+    }
+
+    private func selectedCaption(for item: RepeatOption) -> String? {
+        switch item {
+        case .weekly:
+            return WeeklyWeekdays.summary(mask: weeklyWeekdaysMask)
+        case .monthly:
+            return RepeatDateMatch.monthlyCaption(anchor: anchorDate)
+        case .yearly:
+            return RepeatDateMatch.yearlyCaption(anchor: anchorDate)
+        default:
+            return nil
+        }
     }
 
     private var weekdayChips: some View {

@@ -15,6 +15,14 @@ enum DayLogService {
         log(for: taskId, day: day, logs: logs)?.dayLogStatus
     }
 
+    static func notes(taskId: UUID, day: Date, logs: [TaskDayLog]) -> String {
+        log(for: taskId, day: day, logs: logs)?.notes ?? ""
+    }
+
+    static func hasDayNote(taskId: UUID, day: Date, logs: [TaskDayLog]) -> Bool {
+        log(for: taskId, day: day, logs: logs)?.hasDayNote == true
+    }
+
     @discardableResult
     static func upsert(
         taskId: UUID,
@@ -44,6 +52,55 @@ enum DayLogService {
         return row
     }
 
+    /// Saves the per-day note. Creates a note-only row when needed. Empty note + no mark deletes the row.
+    @discardableResult
+    static func setNotes(
+        taskId: UUID,
+        day: Date,
+        notes: String,
+        in context: ModelContext,
+        source: String = "unknown"
+    ) -> TaskDayLog? {
+        let key = day.startOfLocalDay.localDayKey
+        let now = Date()
+        let clipped = String(notes.prefix(AppDefaults.notesMaxLength))
+        let trimmedEmpty = clipped.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+
+        if let existing = fetchLog(taskId: taskId, dayKey: key, in: context) {
+            if trimmedEmpty, existing.dayLogStatus == nil {
+                context.delete(existing)
+                try? context.save()
+                SyncRecorder.logDeleted(taskId: taskId, dayKey: key, at: now, in: context)
+                refreshAfterChange(context: context)
+                onAnalytics?("day_note_cleared", source, day.startOfLocalDay)
+                return nil
+            }
+            existing.notes = clipped
+            existing.updatedAt = now
+            try? context.save()
+            SyncRecorder.logChanged(taskId: taskId, dayKey: key, at: now, in: context)
+            refreshAfterChange(context: context)
+            onAnalytics?(trimmedEmpty ? "day_note_cleared" : "day_note_saved", source, day.startOfLocalDay)
+            return existing
+        }
+
+        guard !trimmedEmpty else { return nil }
+        let row = TaskDayLog(
+            taskId: taskId,
+            dayKey: key,
+            status: nil,
+            notes: clipped,
+            resolvedAt: now,
+            updatedAt: now
+        )
+        context.insert(row)
+        try? context.save()
+        SyncRecorder.logChanged(taskId: taskId, dayKey: key, at: now, in: context)
+        refreshAfterChange(context: context)
+        onAnalytics?("day_note_saved", source, day.startOfLocalDay)
+        return row
+    }
+
     static func markKept(
         taskId: UUID,
         day: Date,
@@ -64,6 +121,7 @@ enum DayLogService {
         upsert(taskId: taskId, day: day.startOfLocalDay, status: .skipped, at: date, in: context, source: source)
     }
 
+    /// Clears kept/skipped only. Keeps a non-empty day note.
     static func clearLog(
         taskId: UUID,
         day: Date,
@@ -71,10 +129,19 @@ enum DayLogService {
         source: String = "unknown"
     ) {
         let key = day.startOfLocalDay.localDayKey
-        if let existing = fetchLog(taskId: taskId, dayKey: key, in: context) {
+        guard let existing = fetchLog(taskId: taskId, dayKey: key, in: context) else { return }
+        let now = Date()
+        if existing.hasDayNote {
+            existing.dayLogStatus = nil
+            existing.updatedAt = now
+            try? context.save()
+            SyncRecorder.logChanged(taskId: taskId, dayKey: key, at: now, in: context)
+            refreshAfterChange(context: context)
+            onAnalytics?("cleared", source, day.startOfLocalDay)
+        } else {
             context.delete(existing)
             try? context.save()
-            SyncRecorder.logDeleted(taskId: taskId, dayKey: key, in: context)
+            SyncRecorder.logDeleted(taskId: taskId, dayKey: key, at: now, in: context)
             refreshAfterChange(context: context)
             onAnalytics?("cleared", source, day.startOfLocalDay)
         }

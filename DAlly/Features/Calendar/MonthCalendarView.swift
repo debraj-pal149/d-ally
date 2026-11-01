@@ -12,6 +12,8 @@ struct MonthCalendarView: View {
     @State private var marksMode: CalendarMarksMode = .kept
     @State private var focusedTaskIds: Set<UUID> = []
     @State private var focusBookmarks = false
+    @State private var showWeeklyReview = false
+    @State private var weeklyReviewSource: WeekReviewSource = .banner
 
     private var hasLiveBookmarks: Bool {
         bookmarks.contains(where: \.isLive)
@@ -88,6 +90,24 @@ struct MonthCalendarView: View {
                 if let selectedDay {
                     DayDetailSheet(day: selectedDay, tasks: tasks, logs: logs, bookmarks: bookmarks)
                 }
+            }
+            .sheet(isPresented: $showWeeklyReview) {
+                WeeklyReviewSheet(
+                    analysis: WeeklyReviewAnalysisService.make(tasks: tasks, logs: logs),
+                    source: weeklyReviewSource
+                )
+            }
+            .task(id: router.pendingWeekReview?.id) {
+                guard let request = router.pendingWeekReview else { return }
+                guard WeekReview.isSunday() else {
+                    router.pendingWeekReview = nil
+                    return
+                }
+                try? await Task.sleep(for: .milliseconds(300))
+                guard !Task.isCancelled else { return }
+                weeklyReviewSource = request.source
+                showWeeklyReview = true
+                router.pendingWeekReview = nil
             }
         }
     }

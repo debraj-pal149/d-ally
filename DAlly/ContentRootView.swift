@@ -93,6 +93,8 @@ struct ContentRootView: View {
     /// when the person already has habits and we have never asked on this install.
     private func offerNotificationPermissionIfNeeded() {
         guard hasCompletedOnboarding else { return }
+        // Don’t stack the alerts sheet on top of the Day spotlight tour.
+        guard !DayCoach.isPending else { return }
         let masterOn = UserDefaults.standard.object(forKey: AppStorageKey.notificationsMasterEnabled) as? Bool
             ?? AppDefaults.notificationsMasterEnabled
         guard masterOn else { return }
@@ -106,7 +108,8 @@ struct ContentRootView: View {
             guard state == .notDetermined else { return }
             // Let the first frame settle so this does not fight other sheets.
             try? await Task.sleep(nanoseconds: 400_000_000)
-            guard !router.showNotificationPriming,
+            guard !DayCoach.isPending,
+                  !router.showNotificationPriming,
                   router.taskActionPrompt == nil,
                   !router.showTaskEditor,
                   !router.showBookmarkEditor else { return }

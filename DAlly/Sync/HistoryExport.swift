@@ -24,6 +24,7 @@ enum HistoryExport {
                     "taskId": log.taskId.uuidString,
                     "day": log.dayKey,
                     "status": log.status,
+                    "notes": log.notes,
                     "resolvedAt": iso.string(from: log.resolvedAt),
                 ]
             }

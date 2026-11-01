@@ -20,6 +20,7 @@
 		0FAAA0250824F8FD99600747 /* FlexibleWindowFields.swift in Sources */ = {isa = PBXBuildFile; fileRef = 810DE0095483D1D1B050E396 /* FlexibleWindowFields.swift */; };
 		1440556BF54CFDB467D5D160 /* DayHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 328A134674E30B7CED5AB700 /* DayHeaderView.swift */; };
 		1E8BF685773457F565F8D7F4 /* NotificationPrimingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3266E235943A609A9F14F5A6 /* NotificationPrimingView.swift */; };
+		A1B2C3D4E5F60718293A4B02 /* DayCoachTour.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B01 /* DayCoachTour.swift */; };
 		2608511B0AD1486DE37D94E5 /* DayDetailSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C027FF6DCFD5303ACAF084B0 /* DayDetailSheet.swift */; };
 		2672EF2D8FF5BF4D96DA433A /* ColorAssignmentService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37818675B13C95A99CA9FDD2 /* ColorAssignmentService.swift */; };
 		2AD9905875CE85715B2CC9DF /* Date+LocalDay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67FC4DC9F49EA156E498860A /* Date+LocalDay.swift */; };
@@ -104,6 +105,7 @@
 		B50000000000000000000010 /* HabitIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50000000000000000000010 /* HabitIntents.swift */; };
 		B50000000000000000000011 /* DAllyShortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50000000000000000000011 /* DAllyShortcuts.swift */; };
 		B50000000000000000000013 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = F50000000000000000000013 /* GoogleService-Info.plist */; };
+		A1B2C3D4E5F60718293A4C02 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4C01 /* PrivacyInfo.xcprivacy */; };
 		B50000000000000000000020 /* DayBookmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50000000000000000000020 /* DayBookmark.swift */; };
 		B50000000000000000000021 /* BookmarkEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50000000000000000000021 /* BookmarkEditorView.swift */; };
 		W50000000000000000000001 /* DailyTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA29E78C791887167A5FBD7F /* DailyTask.swift */; };
@@ -140,6 +142,8 @@
 		P50000000000000000000023 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = P50000000000000000000013 /* GoogleSignIn */; };
 		P50000000000000000000024 /* Mixpanel in Frameworks */ = {isa = PBXBuildFile; productRef = P50000000000000000000014 /* Mixpanel */; };
 		B50000000000000000000024 /* Analytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50000000000000000000024 /* Analytics.swift */; };
+		B50000000000000000000027 /* WeeklyReviewAnalysis.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50000000000000000000027 /* WeeklyReviewAnalysis.swift */; };
+		B50000000000000000000028 /* WeeklyReviewSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50000000000000000000028 /* WeeklyReviewSheet.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -203,6 +207,7 @@
 		2984D600A48D0CD710C6C602 /* DayStatusChip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayStatusChip.swift; sourceTree = "<group>"; };
 		2D61D16002EA534878F1FA5E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		3266E235943A609A9F14F5A6 /* NotificationPrimingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationPrimingView.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B01 /* DayCoachTour.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayCoachTour.swift; sourceTree = "<group>"; };
 		328A134674E30B7CED5AB700 /* DayHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayHeaderView.swift; sourceTree = "<group>"; };
 		35C0FAABF9D2C047D21B6B73 /* DaySectioningService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DaySectioningService.swift; sourceTree = "<group>"; };
 		374DE34E96432A0D652F2C5E /* AppTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTab.swift; sourceTree = "<group>"; };
@@ -282,6 +287,7 @@
 		F50000000000000000000011 /* DAllyShortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DAllyShortcuts.swift; sourceTree = "<group>"; };
 		F50000000000000000000012 /* DAlly.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DAlly.entitlements; sourceTree = "<group>"; };
 		F50000000000000000000013 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4C01 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		F50000000000000000000025 /* Mixpanel.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Mixpanel.xcconfig; sourceTree = "<group>"; };
 		F50000000000000000000020 /* DayBookmark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayBookmark.swift; sourceTree = "<group>"; };
 		F50000000000000000000021 /* BookmarkEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarkEditorView.swift; sourceTree = "<group>"; };
@@ -292,6 +298,8 @@
 		F50000000000000000000017 /* DAllyWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DAllyWidget.entitlements; sourceTree = "<group>"; };
 		F50000000000000000000018 /* DAllyWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = DAllyWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		F50000000000000000000024 /* Analytics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Analytics.swift; sourceTree = "<group>"; };
+		F50000000000000000000027 /* WeeklyReviewAnalysis.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyReviewAnalysis.swift; sourceTree = "<group>"; };
+		F50000000000000000000028 /* WeeklyReviewSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyReviewSheet.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -358,6 +366,7 @@
 				AFC18D12308D4797457EA4D0 /* Info.plist */,
 				F50000000000000000000012 /* DAlly.entitlements */,
 				F50000000000000000000013 /* GoogleService-Info.plist */,
+				A1B2C3D4E5F60718293A4C01 /* PrivacyInfo.xcprivacy */,
 				F50000000000000000000026 /* Config */,
 			);
 			path = DAlly;
@@ -496,6 +505,7 @@
 				8DBAF7FB4CFF78C1982D8F39 /* NotificationSchedulingService.swift */,
 				3A3BAFDB21B446A98B355409 /* QuietHoursService.swift */,
 				F69D666107838D19BE06F7D0 /* TaskOccurrenceService.swift */,
+				F50000000000000000000027 /* WeeklyReviewAnalysis.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -507,6 +517,7 @@
 				C027FF6DCFD5303ACAF084B0 /* DayDetailSheet.swift */,
 				61C944A774CE2898CFA29BD4 /* MonthCalendarView.swift */,
 				CC7ED440DFF9AD760497B0AA /* MonthGridView.swift */,
+				F50000000000000000000028 /* WeeklyReviewSheet.swift */,
 			);
 			path = Calendar;
 			sourceTree = "<group>";
@@ -587,6 +598,7 @@
 			isa = PBXGroup;
 			children = (
 				3266E235943A609A9F14F5A6 /* NotificationPrimingView.swift */,
+				A1B2C3D4E5F60718293A4B01 /* DayCoachTour.swift */,
 				F70DB51281383A67D596E553 /* WelcomeView.swift */,
 			);
 			path = Onboarding;
@@ -768,6 +780,7 @@
 				61353FD027246C087166E2C0 /* Figtree-SemiBold.ttf in Resources */,
 				F22AFF08F26B6E108B37AB66 /* Figtree-Bold.ttf in Resources */,
 				B50000000000000000000013 /* GoogleService-Info.plist in Resources */,
+				A1B2C3D4E5F60718293A4C02 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -794,6 +807,7 @@
 				B50000000000000000000021 /* BookmarkEditorView.swift in Sources */,
 				7F559EFCAA64098282D622DE /* TaskRowView.swift in Sources */,
 				1E8BF685773457F565F8D7F4 /* NotificationPrimingView.swift in Sources */,
+				A1B2C3D4E5F60718293A4B02 /* DayCoachTour.swift in Sources */,
 				C1E2ED954BAA8D3F3174A0F3 /* WelcomeView.swift in Sources */,
 				63DAB9F57770B5D86B2FB368 /* QuietHoursSettingsView.swift in Sources */,
 				9CB33F9927531105F86EF8F9 /* SettingsView.swift in Sources */,
@@ -832,6 +846,8 @@
 				2672EF2D8FF5BF4D96DA433A /* ColorAssignmentService.swift in Sources */,
 				7A426456A5DA1BDFCFA1CB0D /* DayBoundaryObserver.swift in Sources */,
 				B50000000000000000000024 /* Analytics.swift in Sources */,
+				B50000000000000000000027 /* WeeklyReviewAnalysis.swift in Sources */,
+				B50000000000000000000028 /* WeeklyReviewSheet.swift in Sources */,
 				F45A47B16709B8E0195418DF /* DayLogService.swift in Sources */,
 				F437171B89E86B4FFC70CC9E /* DaySectioningService.swift in Sources */,
 				87799B1B5FE107953616457F /* DeepLinkRouter.swift in Sources */,

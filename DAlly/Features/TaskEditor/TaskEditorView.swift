@@ -88,7 +88,11 @@ struct TaskEditorView: View {
                         }
 
                         Section("Repeat") {
-                            RepeatPicker(option: $repeatOption, weeklyWeekdaysMask: $weeklyWeekdaysMask)
+                            RepeatPicker(
+                                option: $repeatOption,
+                                weeklyWeekdaysMask: $weeklyWeekdaysMask,
+                                anchorDate: existing?.startDate ?? Date()
+                            )
                         }
 
                         Section {

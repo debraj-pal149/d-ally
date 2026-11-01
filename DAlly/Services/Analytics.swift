@@ -24,6 +24,14 @@ enum Analytics {
         return value.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
+    /// Settings → Privacy. Default on; user can opt out.
+    nonisolated static var isEnabled: Bool {
+        if UserDefaults.standard.object(forKey: AppStorageKey.analyticsEnabled) == nil {
+            return AppDefaults.analyticsEnabled
+        }
+        return UserDefaults.standard.bool(forKey: AppStorageKey.analyticsEnabled)
+    }
+
     @MainActor
     static func configure() {
         #if canImport(Mixpanel)
@@ -34,12 +42,23 @@ enum Analytics {
         #if DEBUG
         Mixpanel.mainInstance().loggingEnabled = true
         #endif
+        applyOptOutPreference()
         DayLogService.onAnalytics = { status, source, day in
             switch status {
             case "kept", "skipped":
                 habitMarked(status: status, source: source, day: day)
             case "cleared":
                 habitLogCleared(source: source, day: day)
+            case "day_note_saved":
+                track("day_note_saved", [
+                    "source": source,
+                    "day_kind": DaySectioningService.kind(of: day).analyticsName,
+                ])
+            case "day_note_cleared":
+                track("day_note_cleared", [
+                    "source": source,
+                    "day_kind": DaySectioningService.kind(of: day).analyticsName,
+                ])
             default:
                 break
             }
@@ -49,10 +68,36 @@ enum Analytics {
         #endif
     }
 
+    /// Call when the Settings toggle changes.
+    @MainActor
+    static func setEnabled(_ enabled: Bool) {
+        UserDefaults.standard.set(enabled, forKey: AppStorageKey.analyticsEnabled)
+        #if canImport(Mixpanel)
+        guard isReady, !SharedSettings.isExtension else { return }
+        applyOptOutPreference()
+        if enabled {
+            registerSuperProperties()
+            track("analytics_opted_in")
+        }
+        #endif
+    }
+
+    @MainActor
+    private static func applyOptOutPreference() {
+        #if canImport(Mixpanel)
+        guard isReady else { return }
+        if isEnabled {
+            Mixpanel.mainInstance().optInTracking()
+        } else {
+            Mixpanel.mainInstance().optOutTracking()
+        }
+        #endif
+    }
+
     /// Safe from any thread / ViewBuilder context.
     nonisolated static func track(_ event: String, _ properties: [String: String] = [:]) {
         #if canImport(Mixpanel)
-        guard isReady, !SharedSettings.isExtension else { return }
+        guard isReady, isEnabled, !SharedSettings.isExtension else { return }
         Mixpanel.mainInstance().track(event: event, properties: properties)
         #endif
     }
@@ -60,7 +105,7 @@ enum Analytics {
     @MainActor
     static func identify(uid: String, provider: String) {
         #if canImport(Mixpanel)
-        guard isReady, !SharedSettings.isExtension else { return }
+        guard isReady, isEnabled, !SharedSettings.isExtension else { return }
         Mixpanel.mainInstance().identify(distinctId: uid)
         peopleSet([
             "auth_state": "signed_in",
@@ -75,24 +120,26 @@ enum Analytics {
         #if canImport(Mixpanel)
         guard isReady, !SharedSettings.isExtension else { return }
         Mixpanel.mainInstance().reset()
-        peopleSet([
-            "auth_state": "guest",
-            "auth_provider": "none",
-        ])
-        registerSuperProperties()
+        if isEnabled {
+            peopleSet([
+                "auth_state": "guest",
+                "auth_provider": "none",
+            ])
+            registerSuperProperties()
+        }
         #endif
     }
 
     nonisolated static func peopleSet(_ properties: [String: String]) {
         #if canImport(Mixpanel)
-        guard isReady, !SharedSettings.isExtension else { return }
+        guard isReady, isEnabled, !SharedSettings.isExtension else { return }
         Mixpanel.mainInstance().people.set(properties: properties)
         #endif
     }
 
     nonisolated static func peopleIncrement(_ property: String, by amount: Double = 1) {
         #if canImport(Mixpanel)
-        guard isReady, !SharedSettings.isExtension else { return }
+        guard isReady, isEnabled, !SharedSettings.isExtension else { return }
         Mixpanel.mainInstance().people.increment(property: property, by: amount)
         #endif
     }
@@ -103,7 +150,7 @@ enum Analytics {
             "bookmark_count_live": String(bookmarks),
         ])
         #if canImport(Mixpanel)
-        guard !SharedSettings.isExtension else { return }
+        guard isEnabled, !SharedSettings.isExtension else { return }
         guard isReady else { return }
         Mixpanel.mainInstance().registerSuperProperties(["habit_count_live": String(habits)])
         #endif
@@ -160,7 +207,7 @@ enum Analytics {
     @MainActor
     private static func registerSuperProperties(habitCount: Int? = nil) {
         #if canImport(Mixpanel)
-        guard isReady, !SharedSettings.isExtension else { return }
+        guard isReady, isEnabled, !SharedSettings.isExtension else { return }
         var props: [String: String] = [
             "app_version": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown",
             "build_config": buildConfig,

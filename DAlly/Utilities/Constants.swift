@@ -3,8 +3,14 @@ import Foundation
 enum AppStorageKey {
     static let hasCompletedOnboarding = "hasCompletedOnboarding"
     static let welcomeSeen = "welcomeSeen"
+    /// After Welcome + Profile, show the Day spotlight tour once (also re-armed by “Show welcome again”).
+    static let dayCoachPending = "dayCoachPending"
+    /// Product analytics (Mixpanel). User can turn off in Settings → Privacy.
+    static let analyticsEnabled = "analyticsEnabled"
     /// Profile that last synced the habits on this phone. Empty means they belong to no profile yet.
     static let localDataOwnerUID = "localDataOwnerUID"
+    /// Firebase project the last launch was signed against. A change signs out without deleting habits.
+    static let firebaseProjectID = "firebaseProjectID"
     static let appearanceMode = "appearanceMode"
     static let notificationsMasterEnabled = "notificationsMasterEnabled"
     static let hasRequestedNotificationPermission = "hasRequestedNotificationPermission"
@@ -19,6 +25,7 @@ enum AppStorageKey {
 enum AppDefaults {
     static let appearanceMode = AppearanceMode.system.rawValue
     static let notificationsMasterEnabled = true
+    static let analyticsEnabled = true
     static let defaultOverdueMode = OverdueReminderMode.onceAfter30Minutes.rawValue
     static let quietHoursEnabled = true
     static let quietHoursStartHour = 22
@@ -86,6 +93,14 @@ enum AppCopy {
     static let pointBookmark = "Create Day Bookmarks to remember what you did on a particular date."
     static let begin = "Start"
     static let alreadyKnow = "Skip"
+    static let coachAddTitle = "Add your first task"
+    static let coachAddBody = "Tap + to add something you want to do every day."
+    static let coachDayTitle = "Keep track of your day"
+    static let coachDayBody = "See what you've done and mark each task as kept, missed or skipped."
+    static let coachCalendarTitle = "See how you're doing"
+    static let coachCalendarBody = "Your calendar gives you a look at how consistent you've been."
+    static let coachNext = "Next"
+    static let coachDone = "Done"
     static let emptyHeadline = "Start a daily rhythm."
     static let emptyBody = "Tap + to add one."
     static let addDailyReminder = "Add reminder"
@@ -108,6 +123,7 @@ enum AppCopy {
     static let stopBody = "No more alerts. History stays."
     static let restoreReminder = "Restore reminder"
     static let futureResolve = "Wait until that day."
+    static let dayNotePlaceholder = "Note for this day"
     static let quietHelper = "Uses phone time. On-time alerts still sound."
     static let quietInvalid = "Start and end cannot match."
     static let settingsAlertsBlurb = "d·ally notifications help you stick to your daily rhythm."

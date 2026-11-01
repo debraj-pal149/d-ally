@@ -38,6 +38,7 @@ struct EmptyDayView: View {
                     }
             }
             .padding(.horizontal, 20)
+            .coachAnchor(.dayBody, padding: 4)
             Spacer(minLength: 16)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

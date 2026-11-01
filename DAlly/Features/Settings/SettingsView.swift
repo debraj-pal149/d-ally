@@ -8,6 +8,7 @@ struct SettingsView: View {
     @AppStorage(AppStorageKey.defaultOverdueMode) private var defaultOverdue = AppDefaults.defaultOverdueMode
     @AppStorage(AppStorageKey.hasCompletedOnboarding) private var hasCompletedOnboarding = false
     @AppStorage(AppStorageKey.welcomeSeen) private var welcomeSeen = false
+    @AppStorage(AppStorageKey.analyticsEnabled) private var analyticsEnabled = AppDefaults.analyticsEnabled
     @Environment(\.modelContext) private var modelContext
     @Environment(\.colorScheme) private var scheme
     @State private var authState: NotificationAuthState = .notDetermined
@@ -78,6 +79,17 @@ struct SettingsView: View {
                     }
                     .listRowBackground(settingsRowBackground)
 
+                    Section("Privacy") {
+                        Toggle("Product analytics", isOn: $analyticsEnabled)
+                        Text("Helps improve d·ally. Turn off to stop sending usage events to Mixpanel. Does not include the text of your day notes.")
+                            .font(AppTypography.footnote)
+                            .foregroundStyle(AppColors.textSecondary(scheme))
+                        Link("Privacy Policy", destination: URL(string: "https://dallytasks.app/privacy")!)
+                            .font(AppTypography.footnote)
+                            .foregroundStyle(AppColors.aquaInk(scheme))
+                    }
+                    .listRowBackground(settingsRowBackground)
+
                     Section("About") {
                         LabeledContent("App", value: AppCopy.brand)
                         LabeledContent("Version", value: "1.0.0")
@@ -88,6 +100,8 @@ struct SettingsView: View {
                         Button("Show welcome again") {
                             welcomeSeen = false
                             hasCompletedOnboarding = false
+                            // Re-arm Day spotlights after Welcome → Profile (same path as first install).
+                            DayCoach.markPending()
                         }
                     }
                     .listRowBackground(settingsRowBackground)
@@ -102,6 +116,9 @@ struct SettingsView: View {
             }
             .onChange(of: masterEnabled) { _, _ in
                 NotificationSchedulingService.shared.rescheduleFromStore(context: modelContext)
+            }
+            .onChange(of: analyticsEnabled) { _, enabled in
+                Analytics.setEnabled(enabled)
             }
         }
     }

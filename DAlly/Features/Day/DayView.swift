@@ -8,6 +8,7 @@ struct DayView: View {
     @Query(sort: \DailyTask.hour) private var tasks: [DailyTask]
     @Query private var logs: [TaskDayLog]
     @Query private var bookmarks: [DayBookmark]
+    @AppStorage(AppStorageKey.dayCoachPending) private var dayCoachPending = false
     @State private var stopTarget: DailyTask?
     @State private var confirmStop = false
 
@@ -31,7 +32,7 @@ struct DayView: View {
             Group {
                 if !hasContent {
                     VStack(spacing: 12) {
-                        if kind == .today, WeekReview.isSunday(context.date) {
+                        if kind == .today, WeekReview.isSunday(context.date), !dayCoachPending {
                             WeekReviewBanner {
                                 tapWeekReviewBanner()
                             }
@@ -45,7 +46,7 @@ struct DayView: View {
                 } else {
                     ScrollView {
                         LazyVStack(alignment: .leading, spacing: 10) {
-                            if kind == .today, WeekReview.isSunday(context.date) {
+                            if kind == .today, WeekReview.isSunday(context.date), !dayCoachPending {
                                 WeekReviewBanner {
                                     tapWeekReviewBanner()
                                 }
@@ -56,10 +57,12 @@ struct DayView: View {
                                     task: hero.task,
                                     section: hero.section,
                                     day: day,
+                                    hasDayNote: DayLogService.hasDayNote(taskId: hero.task.id, day: day, logs: logs),
                                     onDone: { markKept(hero.task, source: "hero") },
                                     onSkip: { skip(hero.task, source: "hero") },
                                     onOpenActions: { router.openTaskActions(taskId: hero.task.id, day: day) }
                                 )
+                                .coachAnchor(.dayBody, padding: 4)
                             }
 
                             if !dayBookmarks.isEmpty {
@@ -81,6 +84,7 @@ struct DayView: View {
                                             day: day,
                                             section: section.id,
                                             status: DayLogService.status(taskId: task.id, day: day, logs: logs),
+                                            hasDayNote: DayLogService.hasDayNote(taskId: task.id, day: day, logs: logs),
                                             canResolve: canResolve,
                                             onToggleKept: { markKept(task) },
                                             onSkip: { skip(task) },
@@ -91,6 +95,9 @@ struct DayView: View {
                                                 confirmStop = true
                                             }
                                         )
+                                        .modifier(FirstTaskCoachAnchor(
+                                            enabled: hero == nil && task.id == firstNonHeroTaskID(in: sections, excluding: nil)
+                                        ))
                                     }
                                 }
                             }
@@ -136,9 +143,20 @@ struct DayView: View {
         return nil
     }
 
+    private func firstNonHeroTaskID(in sections: [DaySection], excluding heroID: UUID?) -> UUID? {
+        let order: [DaySectionID] = [.pastDue, .nextHour, .later]
+        for id in order {
+            guard let tasks = sections.first(where: { $0.id == id })?.tasks else { continue }
+            if let first = tasks.first(where: { $0.id != heroID }) {
+                return first.id
+            }
+        }
+        return nil
+    }
+
     private func tapWeekReviewBanner() {
         Analytics.track("week_review_banner_tapped")
-        router.openCalendar()
+        router.openCalendar(reviewSource: .banner)
     }
 
     private func markKept(_ task: DailyTask, source: String = "row") {
@@ -181,6 +199,18 @@ struct DayView: View {
         Analytics.track("habit_editor_stopped", ["source": "day"])
         Analytics.syncCounts(from: modelContext)
         Haptics.delete()
+    }
+}
+
+private struct FirstTaskCoachAnchor: ViewModifier {
+    var enabled: Bool
+
+    func body(content: Content) -> some View {
+        if enabled {
+            content.coachAnchor(.dayBody, padding: 4)
+        } else {
+            content
+        }
     }
 }
 
@@ -238,6 +268,7 @@ private struct EndedHabitsSection: View {
                     day: day,
                     section: .ended,
                     status: DayLogService.status(taskId: task.id, day: day, logs: logs),
+                    hasDayNote: DayLogService.hasDayNote(taskId: task.id, day: day, logs: logs),
                     canResolve: canResolve,
                     onToggleKept: { onToggleKept(task) },
                     onSkip: { onSkip(task) },
@@ -265,6 +296,7 @@ private struct TodayFocusCard: View {
     var task: DailyTask
     var section: DaySectionID
     var day: Date
+    var hasDayNote: Bool = false
     var onDone: () -> Void
     var onSkip: () -> Void
     var onOpenActions: () -> Void
@@ -294,9 +326,17 @@ private struct TodayFocusCard: View {
                             .lineLimit(2)
                             .multilineTextAlignment(.leading)
                         Spacer(minLength: 8)
-                        Text(task.rowTimeLabel)
-                            .font(AppTypography.heroTime.monospacedDigit())
-                            .foregroundStyle(color)
+                        HStack(spacing: 6) {
+                            if hasDayNote {
+                                Image(systemName: "text.alignleft")
+                                    .font(.caption.weight(.semibold))
+                                    .foregroundStyle(AppColors.textTertiary(scheme))
+                                    .accessibilityLabel("Has a note for this day")
+                            }
+                            Text(task.rowTimeLabel)
+                                .font(AppTypography.heroTime.monospacedDigit())
+                                .foregroundStyle(color)
+                        }
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)

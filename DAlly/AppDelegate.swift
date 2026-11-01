@@ -132,4 +132,29 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
 
 extension Notification.Name {
     static let dallyOpenURL = Notification.Name("dallyOpenURL")
+    /// DEBUG: posted when `notifyutil -p com.debrajpal.dally.debug.coachAdvance` fires.
+    static let dallyDebugCoachAdvance = Notification.Name("dallyDebugCoachAdvance")
 }
+
+#if DEBUG
+enum DebugCoachAdvance {
+    private static var installed = false
+    static func install() {
+        guard !installed else { return }
+        installed = true
+        let name = CFNotificationName("com.debrajpal.dally.debug.coachAdvance" as CFString)
+        CFNotificationCenterAddObserver(
+            CFNotificationCenterGetDarwinNotifyCenter(),
+            nil,
+            { _, _, _, _, _ in
+                DispatchQueue.main.async {
+                    NotificationCenter.default.post(name: .dallyDebugCoachAdvance, object: nil)
+                }
+            },
+            name.rawValue,
+            nil,
+            .deliverImmediately
+        )
+    }
+}
+#endif

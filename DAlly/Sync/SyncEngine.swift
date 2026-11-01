@@ -311,15 +311,16 @@ final class SyncEngine {
                 }
             } else if let local {
                 local.status = cloud.status
+                local.notes = cloud.notes
                 local.resolvedAt = cloud.resolvedAt
                 local.updatedAt = cloud.updatedAt
                 changed = true
             } else {
-                let status = DayLogStatus(rawValue: cloud.status) ?? .kept
                 context.insert(TaskDayLog(
                     taskId: cloud.taskId,
                     dayKey: cloud.dayKey,
-                    status: status,
+                    status: DayLogStatus(rawValue: cloud.status),
+                    notes: cloud.notes,
                     resolvedAt: cloud.resolvedAt,
                     updatedAt: cloud.updatedAt
                 ))

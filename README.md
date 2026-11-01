@@ -83,7 +83,8 @@ Bundle ID: `com.debrajpal.dally` · App Group: `group.com.debrajpal.dally` · Di
 - Day logs are **per day**: keeping a task yesterday does not keep it today.
 - **Profiles** (Google or Apple sign-in through Firebase) sync habits and day logs to Firestore under `users/{uid}`. Guest mode keeps everything local.
 - Signing in with existing local data **merges**: union of records, latest `updatedAt` wins, deletions travel as tombstones, and the store is snapshotted to `Application Support/Backups` first.
-- Firebase config lives in `DAlly/GoogleService-Info.plist` (not committed). Download it from the Firebase console for the `d-ally` project.
+- Firebase config lives in `DAlly/GoogleService-Info.plist` (not committed). Download it from the minarnet Firebase project `d-ally-f0f63`.
+- Apple account deletion (not sign-in) later needs this callback URL on the Services ID: `https://d-ally-f0f63.firebaseapp.com/__/auth/handler`
 
 ## Tests
 

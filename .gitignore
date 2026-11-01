@@ -71,6 +71,7 @@ DAlly/GoogleService-Info.plist
 DAlly/Config/Mixpanel.xcconfig
 *.pem
 AuthKey_*.p8
+auth .p8 key for dally/
 *.mobileprovision
 *.cer
 *.p12

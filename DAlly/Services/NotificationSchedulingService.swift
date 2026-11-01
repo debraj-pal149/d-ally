@@ -230,7 +230,7 @@ final class NotificationSchedulingService {
         content.categoryIdentifier = NotificationIDs.categoryWeekly
         content.interruptionLevel = .active
         content.userInfo = [
-            "url": "dally://calendar",
+            "url": "dally://calendar?review=notification",
             "kind": "weeklyReview"
         ]
         let trigger = UNCalendarNotificationTrigger(dateMatching: comps, repeats: true)

@@ -71,6 +71,127 @@ final class FlexibleValidationTests: XCTestCase {
     }
 }
 
+final class WeeklyReviewAnalysisTests: XCTestCase {
+    private let calendar = Calendar.current
+
+    func testOpenSundayDoesNotCountAsMissed() {
+        let monday = date(2026, 10, 19)
+        let sundayNoon = date(2026, 10, 25, hour: 12)
+        let task = DailyTask(name: "Walk", colorHex: "#37E3AF", startDate: monday)
+        let logs = (0..<6).map { offset in
+            TaskDayLog(
+                taskId: task.id,
+                dayKey: monday.addingLocalDays(offset).localDayKey,
+                status: .kept
+            )
+        }
+
+        let result = WeeklyReviewAnalysisService.make(
+            tasks: [task],
+            logs: logs,
+            now: sundayNoon,
+            calendar: calendar
+        )
+
+        XCTAssertEqual(result.currentWeek.kept, 6)
+        XCTAssertEqual(result.currentWeek.scheduled, 6)
+        XCTAssertEqual(result.currentWeek.missed, 0)
+        XCTAssertEqual(result.currentWeek.percentage, 100)
+    }
+
+    func testResolvedSundayIsIncluded() {
+        let monday = date(2026, 10, 19)
+        let sunday = date(2026, 10, 25)
+        let task = DailyTask(name: "Walk", colorHex: "#37E3AF", startDate: monday)
+        let log = TaskDayLog(taskId: task.id, dayKey: sunday.localDayKey, status: .skipped)
+
+        let result = WeeklyReviewAnalysisService.make(
+            tasks: [task],
+            logs: [log],
+            now: date(2026, 10, 25, hour: 12),
+            calendar: calendar
+        )
+
+        XCTAssertEqual(result.currentWeek.scheduled, 7)
+        XCTAssertEqual(result.currentWeek.skipped, 1)
+        XCTAssertEqual(result.currentWeek.missed, 6)
+    }
+
+    func testPreviousWeekOnlyAppearsWhenItHasScheduledOccurrences() {
+        let task = DailyTask(
+            name: "New habit",
+            colorHex: "#2CD4FF",
+            startDate: date(2026, 10, 19)
+        )
+
+        let result = WeeklyReviewAnalysisService.make(
+            tasks: [task],
+            logs: [],
+            now: date(2026, 10, 25, hour: 12),
+            calendar: calendar
+        )
+
+        XCTAssertNil(result.previousWeek)
+        XCTAssertNil(result.taskRhythms.first?.previousPercentage)
+    }
+
+    func testPreviousWeekComparisonUsesEarlierHistory() {
+        let previousMonday = date(2026, 10, 12)
+        let task = DailyTask(name: "Read", colorHex: "#D8EE45", startDate: previousMonday)
+        let logs = [
+            TaskDayLog(taskId: task.id, dayKey: previousMonday.localDayKey, status: .kept),
+            TaskDayLog(taskId: task.id, dayKey: date(2026, 10, 19).localDayKey, status: .kept),
+        ]
+
+        let result = WeeklyReviewAnalysisService.make(
+            tasks: [task],
+            logs: logs,
+            now: date(2026, 10, 25, hour: 12),
+            calendar: calendar
+        )
+
+        XCTAssertNotNil(result.previousWeek)
+        XCTAssertEqual(result.previousWeek?.scheduled, 7)
+        XCTAssertEqual(result.taskRhythms.first?.previousPercentage, 14)
+    }
+
+    func testTaskRhythmIncludesEveryLiveTaskAndExcludesEndedTasks() {
+        let monday = date(2026, 10, 19)
+        let live = (0..<6).map {
+            DailyTask(name: "Habit \($0)", colorHex: "#2CD4FF", startDate: monday)
+        }
+        let ended = DailyTask(
+            name: "Ended",
+            colorHex: "#FF6C55",
+            startDate: monday,
+            endDate: monday,
+            isStopped: true
+        )
+
+        let result = WeeklyReviewAnalysisService.make(
+            tasks: live + [ended],
+            logs: [],
+            now: date(2026, 10, 25, hour: 12),
+            calendar: calendar
+        )
+
+        XCTAssertEqual(result.taskRhythms.count, 6)
+        XCTAssertFalse(result.taskRhythms.contains { $0.name == "Ended" })
+    }
+
+    private func date(_ year: Int, _ month: Int, _ day: Int, hour: Int = 9) -> Date {
+        calendar.date(
+            from: DateComponents(
+                timeZone: calendar.timeZone,
+                year: year,
+                month: month,
+                day: day,
+                hour: hour
+            )
+        )!
+    }
+}
+
 final class NotificationIDTests: XCTestCase {
     func testIDsContainTaskAndDay() {
         let id = UUID()
@@ -175,6 +296,59 @@ final class RepeatCadenceTests: XCTestCase {
         XCTAssertTrue(task.isActive(on: start.addingLocalDays(1)))
         XCTAssertFalse(task.isActive(on: start.addingLocalDays(-1)))
     }
+
+    func testMonthlyOnThisDate() {
+        let cal = Calendar.current
+        // 2026-10-30
+        let start = cal.date(from: DateComponents(calendar: cal, year: 2026, month: 10, day: 30))!.startOfLocalDay
+        let task = DailyTask(name: "Rent", colorHex: "#AF52DE", startDate: start, repeatKind: .monthly)
+        XCTAssertTrue(task.isActive(on: start))
+        let nov30 = cal.date(from: DateComponents(calendar: cal, year: 2026, month: 11, day: 30))!.startOfLocalDay
+        let nov29 = cal.date(from: DateComponents(calendar: cal, year: 2026, month: 11, day: 29))!.startOfLocalDay
+        let dec30 = cal.date(from: DateComponents(calendar: cal, year: 2026, month: 12, day: 30))!.startOfLocalDay
+        XCTAssertTrue(task.isActive(on: nov30))
+        XCTAssertFalse(task.isActive(on: nov29))
+        XCTAssertTrue(task.isActive(on: dec30))
+    }
+
+    func testMonthlyClampsToLastDayOfShortMonth() {
+        let cal = Calendar.current
+        // 2026-01-31
+        let start = cal.date(from: DateComponents(calendar: cal, year: 2026, month: 1, day: 31))!.startOfLocalDay
+        let task = DailyTask(name: "Bill", colorHex: "#FF9500", startDate: start, repeatKind: .monthly)
+        let feb28 = cal.date(from: DateComponents(calendar: cal, year: 2026, month: 2, day: 28))!.startOfLocalDay
+        let feb27 = cal.date(from: DateComponents(calendar: cal, year: 2026, month: 2, day: 27))!.startOfLocalDay
+        let mar31 = cal.date(from: DateComponents(calendar: cal, year: 2026, month: 3, day: 31))!.startOfLocalDay
+        XCTAssertTrue(task.isActive(on: feb28))
+        XCTAssertFalse(task.isActive(on: feb27))
+        XCTAssertTrue(task.isActive(on: mar31))
+    }
+
+    func testYearlyOnThisDate() {
+        let cal = Calendar.current
+        let start = cal.date(from: DateComponents(calendar: cal, year: 2026, month: 10, day: 30))!.startOfLocalDay
+        let task = DailyTask(name: "Birthday", colorHex: "#FF2D55", startDate: start, repeatKind: .yearly)
+        let y2027 = cal.date(from: DateComponents(calendar: cal, year: 2027, month: 10, day: 30))!.startOfLocalDay
+        let y2028 = cal.date(from: DateComponents(calendar: cal, year: 2028, month: 10, day: 30))!.startOfLocalDay
+        let other = cal.date(from: DateComponents(calendar: cal, year: 2027, month: 10, day: 29))!.startOfLocalDay
+        XCTAssertTrue(task.isActive(on: start))
+        XCTAssertTrue(task.isActive(on: y2027))
+        XCTAssertTrue(task.isActive(on: y2028))
+        XCTAssertFalse(task.isActive(on: other))
+    }
+
+    func testYearlyFeb29ClampsInNonLeapYears() {
+        let cal = Calendar.current
+        let start = cal.date(from: DateComponents(calendar: cal, year: 2024, month: 2, day: 29))!.startOfLocalDay
+        let task = DailyTask(name: "Leap", colorHex: "#5AC8FA", startDate: start, repeatKind: .yearly)
+        let leap2028 = cal.date(from: DateComponents(calendar: cal, year: 2028, month: 2, day: 29))!.startOfLocalDay
+        let nonLeap2025 = cal.date(from: DateComponents(calendar: cal, year: 2025, month: 2, day: 28))!.startOfLocalDay
+        let nonLeap2025_27 = cal.date(from: DateComponents(calendar: cal, year: 2025, month: 2, day: 27))!.startOfLocalDay
+        XCTAssertTrue(task.isActive(on: start))
+        XCTAssertTrue(task.isActive(on: leap2028))
+        XCTAssertTrue(task.isActive(on: nonLeap2025))
+        XCTAssertFalse(task.isActive(on: nonLeap2025_27))
+    }
 }
 
 final class DayLogIndependenceTests: XCTestCase {
@@ -205,6 +379,44 @@ final class DayLogIndependenceTests: XCTestCase {
         XCTAssertEqual(logs2.count, 2)
         XCTAssertEqual(DayLogService.status(taskId: task.id, day: yesterday, logs: logs2), .kept)
         XCTAssertEqual(DayLogService.status(taskId: task.id, day: today, logs: logs2), .kept)
+    }
+
+    @MainActor
+    func testDayNoteSurvivesMarkAndClear() throws {
+        let schema = Schema([DailyTask.self, TaskDayLog.self, SyncOutbox.self])
+        let config = ModelConfiguration(isStoredInMemoryOnly: true)
+        let container = try ModelContainer(for: schema, configurations: config)
+        let context = ModelContext(container)
+
+        let task = DailyTask(name: "Walk", colorHex: "#34C759")
+        context.insert(task)
+        try context.save()
+        let today = Date().startOfLocalDay
+        let tomorrow = today.addingLocalDays(1)
+
+        DayLogService.setNotes(taskId: task.id, day: tomorrow, notes: "Bring headphones", in: context)
+        var logs = try context.fetch(FetchDescriptor<TaskDayLog>())
+        XCTAssertEqual(logs.count, 1)
+        XCTAssertNil(DayLogService.status(taskId: task.id, day: tomorrow, logs: logs))
+        XCTAssertTrue(DayLogService.hasDayNote(taskId: task.id, day: tomorrow, logs: logs))
+        XCTAssertEqual(DayLogService.notes(taskId: task.id, day: tomorrow, logs: logs), "Bring headphones")
+
+        DayLogService.markKept(taskId: task.id, day: tomorrow, in: context)
+        logs = try context.fetch(FetchDescriptor<TaskDayLog>())
+        XCTAssertEqual(logs.count, 1)
+        XCTAssertEqual(DayLogService.status(taskId: task.id, day: tomorrow, logs: logs), .kept)
+        XCTAssertEqual(DayLogService.notes(taskId: task.id, day: tomorrow, logs: logs), "Bring headphones")
+
+        DayLogService.clearLog(taskId: task.id, day: tomorrow, in: context)
+        logs = try context.fetch(FetchDescriptor<TaskDayLog>())
+        XCTAssertEqual(logs.count, 1)
+        XCTAssertNil(DayLogService.status(taskId: task.id, day: tomorrow, logs: logs))
+        XCTAssertTrue(DayLogService.hasDayNote(taskId: task.id, day: tomorrow, logs: logs))
+
+        DayLogService.setNotes(taskId: task.id, day: tomorrow, notes: "   ", in: context)
+        logs = try context.fetch(FetchDescriptor<TaskDayLog>())
+        XCTAssertEqual(logs.count, 0)
+        XCTAssertFalse(DayLogService.hasDayNote(taskId: task.id, day: tomorrow, logs: logs))
     }
 }
 
@@ -476,17 +688,27 @@ final class CloudCodecTests: XCTestCase {
 
     func testLogRoundTripAndKey() {
         let taskId = UUID()
-        let log = TaskDayLog(taskId: taskId, dayKey: "2026-09-27", status: .skipped)
+        let log = TaskDayLog(taskId: taskId, dayKey: "2026-09-27", status: .skipped, notes: "Walked fast")
         let cloud = CloudCodec.decodeLog(CloudCodec.log(from: log))
         XCTAssertEqual(cloud?.taskId, taskId)
         XCTAssertEqual(cloud?.dayKey, "2026-09-27")
         XCTAssertEqual(cloud?.status, DayLogStatus.skipped.rawValue)
+        XCTAssertEqual(cloud?.notes, "Walked fast")
         XCTAssertEqual(cloud?.updatedAt, log.updatedAt)
 
         let key = SyncKeys.log(taskId: taskId, dayKey: "2026-09-27")
         let parts = SyncKeys.splitLog(key)
         XCTAssertEqual(parts?.taskId, taskId)
         XCTAssertEqual(parts?.dayKey, "2026-09-27")
+    }
+
+    func testNoteOnlyLogRoundTrip() {
+        let taskId = UUID()
+        let log = TaskDayLog(taskId: taskId, dayKey: "2026-09-28", status: nil, notes: "Prep for tomorrow")
+        let cloud = CloudCodec.decodeLog(CloudCodec.log(from: log))
+        XCTAssertEqual(cloud?.status, "")
+        XCTAssertEqual(cloud?.notes, "Prep for tomorrow")
+        XCTAssertNil(DayLogStatus(rawValue: cloud?.status ?? "x"))
     }
 
     func testBookmarkRoundTrip() {
@@ -577,6 +799,26 @@ final class SyncRecorderTests: XCTestCase {
         XCTAssertEqual(pending.count, 1)
         XCTAssertTrue(pending.first?.isTombstone ?? false)
         XCTAssertEqual((try? context.fetch(FetchDescriptor<TaskDayLog>()))?.count, 0)
+    }
+
+    func testClearLogWithNoteQueuesChangeNotTombstone() throws {
+        let context = try makeContext()
+        let task = DailyTask(name: "Pill", colorHex: "#007AFF")
+        context.insert(task)
+        try context.save()
+        let day = Date().startOfLocalDay
+        DayLogService.setNotes(taskId: task.id, day: day, notes: "Take with water", in: context)
+        DayLogService.markKept(taskId: task.id, day: day, in: context)
+        DayLogService.clearLog(taskId: task.id, day: day, in: context)
+
+        let logs = try context.fetch(FetchDescriptor<TaskDayLog>())
+        XCTAssertEqual(logs.count, 1)
+        XCTAssertNil(logs.first?.dayLogStatus)
+        XCTAssertEqual(logs.first?.notes, "Take with water")
+
+        let pending = SyncRecorder.pending(in: context)
+        XCTAssertEqual(pending.count, 1)
+        XCTAssertFalse(pending.first?.isTombstone ?? true)
     }
 
     func testEnqueueAllIsIdempotent() throws {
@@ -687,5 +929,97 @@ final class SoftDeleteHistoryTests: XCTestCase {
         task.endDate = today
         XCTAssertTrue(task.belongsInEndedHistory(on: today))
         XCTAssertFalse(task.belongsInEndedHistory(on: today.addingLocalDays(1)))
+    }
+}
+
+final class DayCoachTests: XCTestCase {
+    override func setUp() {
+        super.setUp()
+        DayCoach.clearPending()
+    }
+
+    override func tearDown() {
+        DayCoach.clearPending()
+        super.tearDown()
+    }
+
+    func testStepsProgressInOrderAndMapToAnchors() {
+        XCTAssertEqual(DayCoachStep.allCases.map(\.rawValue), [0, 1, 2])
+        XCTAssertEqual(DayCoachStep.addButton.next, .dayBody)
+        XCTAssertEqual(DayCoachStep.dayBody.next, .calendarTab)
+        XCTAssertNil(DayCoachStep.calendarTab.next)
+
+        // Spotlights must teach: + → day content → Calendar tab (index 1 of 4).
+        XCTAssertEqual(DayCoachStep.addButton.title, "Add your first task")
+        XCTAssertEqual(DayCoachStep.dayBody.title, "Keep track of your day")
+        XCTAssertEqual(DayCoachStep.calendarTab.title, "See how you're doing")
+        XCTAssertEqual(DayCoachStep.calendarTab.cta, AppCopy.coachDone)
+        XCTAssertEqual(DayCoachStep.addButton.cta, AppCopy.coachNext)
+    }
+
+    func testPendingArmedByMarkAndCleared() {
+        XCTAssertFalse(DayCoach.isPending)
+        DayCoach.markPending()
+        XCTAssertTrue(DayCoach.isPending)
+        XCTAssertTrue(UserDefaults.standard.bool(forKey: AppStorageKey.dayCoachPending))
+        DayCoach.clearPending()
+        XCTAssertFalse(DayCoach.isPending)
+    }
+
+    func testAnchorStoreIgnoresEmptyFrames() {
+        let store = CoachAnchorStore()
+        store.set(.addButton, .zero)
+        XCTAssertNil(store.frames[.addButton])
+        let fab = CGRect(x: 300, y: 700, width: 56, height: 56)
+        store.set(.addButton, fab)
+        XCTAssertEqual(store.frames[.addButton], fab)
+        let body = CGRect(x: 20, y: 200, width: 300, height: 120)
+        store.set(.dayBody, body)
+        XCTAssertEqual(store.frames[.dayBody], body)
+    }
+
+    func testCalendarTabUsesSecondTabFrame() {
+        // Day=0, Calendar=1, Profile=2, Settings=3 — coach step .calendarTab reads index 1.
+        let tabs = [
+            CGRect(x: 0, y: 800, width: 100, height: 49),
+            CGRect(x: 100, y: 800, width: 100, height: 49),
+            CGRect(x: 200, y: 800, width: 100, height: 49),
+            CGRect(x: 300, y: 800, width: 100, height: 49),
+        ]
+        XCTAssertEqual(tabs[1].minX, 100)
+        XCTAssertEqual(DayCoachStep.calendarTab.rawValue, 2)
+    }
+
+    func testAnalyticsOptOutKeyDefaultsOn() {
+        let previous = UserDefaults.standard.object(forKey: AppStorageKey.analyticsEnabled)
+        defer {
+            if let previous {
+                UserDefaults.standard.set(previous, forKey: AppStorageKey.analyticsEnabled)
+            } else {
+                UserDefaults.standard.removeObject(forKey: AppStorageKey.analyticsEnabled)
+            }
+        }
+        UserDefaults.standard.removeObject(forKey: AppStorageKey.analyticsEnabled)
+        XCTAssertTrue(Analytics.isEnabled)
+        UserDefaults.standard.set(false, forKey: AppStorageKey.analyticsEnabled)
+        XCTAssertFalse(Analytics.isEnabled)
+        UserDefaults.standard.set(true, forKey: AppStorageKey.analyticsEnabled)
+        XCTAssertTrue(Analytics.isEnabled)
+    }
+
+    func testWeekComparisonUsesPercentNotPoints() {
+        let summary = WeeklyReviewAnalysis.Summary(kept: 5, skipped: 1, missed: 0, scheduled: 10)
+        XCTAssertEqual(summary.percentage, 50)
+        let analysis = WeeklyReviewAnalysis(
+            weekStart: Date().startOfLocalDay,
+            weekEnd: Date().startOfLocalDay,
+            currentWeek: WeeklyReviewAnalysis.Summary(kept: 6, skipped: 0, missed: 0, scheduled: 10),
+            previousWeek: WeeklyReviewAnalysis.Summary(kept: 4, skipped: 0, missed: 0, scheduled: 10),
+            monthToDate: summary,
+            days: [],
+            taskRhythms: []
+        )
+        XCTAssertEqual(analysis.weekComparisonText, "Up 20% from last week")
+        XCTAssertFalse(analysis.weekComparisonText?.contains("point") == true)
     }
 }

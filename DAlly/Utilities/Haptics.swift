@@ -20,4 +20,8 @@ enum Haptics {
     static func dayChange() {
         UIImpactFeedbackGenerator(style: .soft).impactOccurred()
     }
+
+    static func selection() {
+        UISelectionFeedbackGenerator().selectionChanged()
+    }
 }

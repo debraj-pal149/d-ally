@@ -6,6 +6,7 @@ struct TaskRowView: View {
     let day: Date
     let section: DaySectionID
     let status: DayLogStatus?
+    let hasDayNote: Bool
     let canResolve: Bool
 
     var onToggleKept: () -> Void
@@ -48,9 +49,17 @@ struct TaskRowView: View {
 
                     Spacer(minLength: 8)
 
-                    Text(task.rowTimeLabel)
-                        .font(AppTypography.time.monospacedDigit())
-                        .foregroundStyle(AppColors.textSecondary(scheme))
+                    HStack(spacing: 6) {
+                        if hasDayNote {
+                            Image(systemName: "text.alignleft")
+                                .font(.caption2.weight(.semibold))
+                                .foregroundStyle(AppColors.textTertiary(scheme))
+                                .accessibilityLabel("Has a note for this day")
+                        }
+                        Text(task.rowTimeLabel)
+                            .font(AppTypography.time.monospacedDigit())
+                            .foregroundStyle(AppColors.textSecondary(scheme))
+                    }
                 }
                 .padding(.leading, 10)
                 .padding(.vertical, 11)
@@ -103,8 +112,8 @@ struct TaskRowView: View {
                 }
         }
         .sectionOpacity(section.opacity)
-        // Force identity refresh when log status changes (missed → kept).
-        .id("\(task.id.uuidString)-\(status?.rawValue ?? "open")-\(section.rawValue)")
+        // Force identity refresh when log status or day note changes.
+        .id("\(task.id.uuidString)-\(status?.rawValue ?? "open")-\(hasDayNote)-\(section.rawValue)")
         .accessibilityHint(task.schedule == .flexibleUntil ? "\(task.name), before \(TimeDisplay.clock(hour: task.windowEndHour, minute: task.windowEndMinute))" : "")
         .accessibilityElement(children: .contain)
     }

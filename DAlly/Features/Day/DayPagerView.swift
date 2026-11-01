@@ -3,6 +3,7 @@ import SwiftUI
 struct DayPagerView: View {
     @Environment(DeepLinkRouter.self) private var router
     @Environment(\.colorScheme) private var scheme
+    @Environment(\.coachHidesAddButton) private var coachHidesAddButton
 
     var body: some View {
         @Bindable var router = router
@@ -34,11 +35,17 @@ struct DayPagerView: View {
                     .frame(width: 56, height: 56)
                     .background(AppColors.aqua, in: Circle())
                     .shadow(color: AppColors.aqua.opacity(0.45), radius: 12, y: 4)
+                    // Anchor the visible circle (not the padded Button chrome).
+                    .coachAnchor(.addButton, padding: 0)
             }
             .buttonStyle(.plain)
             .padding(.trailing, 20)
             .padding(.bottom, 20)
+            // Hide under the coach stand-in so the dimmed real + never shows through.
+            .opacity(coachHidesAddButton ? 0 : 1)
             .accessibilityLabel(AppCopy.addDailyReminder)
+            .accessibilityIdentifier("coach.addButton")
+            .accessibilityHidden(coachHidesAddButton)
         }
     }
 
