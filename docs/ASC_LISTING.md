@@ -85,13 +85,12 @@ Day notes and bookmarks are private to the person using the app.
 
 ## App Review notes
 
-Paste into **App Review Information → Notes** (and into the Resolution Center reply if asked).  
-Replace `SCREEN_RECORDING_URL` with an unlisted YouTube / iCloud / Google Drive link after you upload the recording.
+Paste into **App Review Information → Notes** (and into the Resolution Center reply if asked).
 
 ```
 SCREEN RECORDING
 Physical-device recording of a typical flow (launch → welcome/skip → Day → add task → mark kept → Calendar → Settings → Profile sign-in optional → delete account if signed in):
-SCREEN_RECORDING_URL
+https://youtube.com/shorts/KhtK_07WZ-Q?feature=share
 
 1) PURPOSE AND AUDIENCE
 d·ally is a personal daily-task reminder app for adults who want a simple private rhythm: set everyday tasks at set times, mark them kept / skipped / missed, and see consistency on a calendar. It is not a social network, not a game, and not a business/enterprise tool. Target audience: general consumers (US, India, and other App Store regions). Problem solved: lightweight daily reminders and honest day/week history without streak pressure or a public feed.
