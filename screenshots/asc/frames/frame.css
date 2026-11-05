@@ -1,0 +1,175 @@
+@font-face {
+  font-family: "Sora";
+  src: url("../fonts/Sora-Bold.ttf") format("truetype");
+  font-weight: 600 700;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Figtree";
+  src: url("../fonts/Figtree-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Figtree";
+  src: url("../fonts/Figtree-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+}
+
+:root {
+  --night: #081217;
+  --ink: #f4f8fa;
+  --cyan: #2cd4ff;
+  --cyan-soft: #89eaff;
+  --lime: #d8ee45;
+  --coral: #ff6c55;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 1320px;
+  height: 2868px;
+  overflow: hidden;
+  background: var(--night);
+  color: var(--ink);
+  font-family: "Figtree", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.shot {
+  position: relative;
+  width: 1320px;
+  height: 2868px;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 90% 55% at 82% 14%, rgba(44, 212, 255, 0.18), transparent 58%),
+    radial-gradient(ellipse 70% 45% at 8% 90%, rgba(55, 227, 175, 0.11), transparent 55%),
+    radial-gradient(ellipse 50% 35% at 70% 75%, rgba(255, 108, 85, 0.07), transparent 60%),
+    linear-gradient(165deg, rgba(8, 18, 23, 0.5) 0%, rgba(8, 18, 23, 0.86) 40%, #081217 100%),
+    var(--bg-image, none) center/cover no-repeat;
+  background-color: var(--night);
+}
+
+.shot::before {
+  content: "";
+  position: absolute;
+  width: 680px;
+  height: 680px;
+  right: -120px;
+  top: 160px;
+  border-radius: 50%;
+  border: 1px solid rgba(44, 212, 255, 0.2);
+  box-shadow: inset 0 0 140px rgba(44, 212, 255, 0.07);
+  pointer-events: none;
+}
+
+.copy {
+  position: absolute;
+  left: 64px;
+  right: 64px;
+  top: 110px;
+  z-index: 5;
+  text-align: center;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin: 0 auto 36px;
+  color: var(--cyan-soft);
+  font-size: 34px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.eyebrow::before {
+  content: "";
+  width: 48px;
+  height: 4px;
+  background: var(--cyan);
+  border-radius: 2px;
+  box-shadow: 0 0 12px rgba(44, 212, 255, 0.5);
+}
+
+h1 {
+  font-family: "Sora", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 148px;
+  line-height: 0.98;
+  letter-spacing: -0.065em;
+  text-wrap: balance;
+}
+
+.lede {
+  margin: 40px auto 0;
+  max-width: 14em;
+  color: #c1cdd2;
+  font-size: 60px;
+  line-height: 1.28;
+  font-weight: 500;
+}
+
+/* Previous good layout + slightly larger phone, nudged up */
+.device-wrap {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 40px;
+  z-index: 4;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+.phone {
+  width: 1020px;
+  margin: 0;
+  overflow: hidden;
+  border: 11px solid #0b1115;
+  border-radius: 78px;
+  background: #071014;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.16),
+    0 0 90px rgba(44, 212, 255, 0.16),
+    0 48px 110px rgba(0, 0, 0, 0.62);
+  transform: translateY(-28px);
+}
+
+.phone img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 67px;
+}
+
+.orbit {
+  position: absolute;
+  z-index: 6;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  box-shadow: 0 0 32px currentColor;
+}
+
+.orbit-a {
+  top: 48%;
+  right: 58px;
+  color: var(--lime);
+  background: var(--lime);
+}
+
+.orbit-b {
+  bottom: 26%;
+  left: 64px;
+  color: var(--coral);
+  background: var(--coral);
+}
+
+.shot.welcome h1 { font-size: 120px; }
+.shot.welcome .copy { top: 120px; }
+.shot.welcome .lede { font-size: 56px; }

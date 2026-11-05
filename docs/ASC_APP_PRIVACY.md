@@ -11,12 +11,12 @@ Privacy Manifest in the binary: `DAlly/PrivacyInfo.xcprivacy` (`NSPrivacyTrackin
 
 | Type | Linked to identity? | Used for tracking? | Purposes |
 |---|---|---|---|
-| **User ID** (Firebase uid) | Yes | No | App functionality (sync), Analytics (Mixpanel when on) |
+| **User ID** (Firebase uid) | Yes | No | App functionality (sync), Analytics (Mixpanel) |
 | **Email address** | Yes | No | App functionality (from Apple/Google if provided) |
 | **Name** | Yes | No | App functionality (display in Profile) |
 | **Other user content** | Yes | No | App functionality — habits, day marks, **day notes**, bookmarks |
 | **Product interaction** | Yes (when signed in) / may be on-device id when guest | No | Analytics (Mixpanel), App functionality |
-| **Device ID** | Yes when Mixpanel is on | No | Analytics only (Mixpanel SDK) |
+| **Device ID** | Yes | No | Analytics only (Mixpanel SDK) |
 
 Do **not** declare: Precise Location, Contacts, Photos, Health, Financial, Advertising Data (unless you add those later).
 
@@ -28,7 +28,7 @@ Do **not** declare: Precise Location, Contacts, Photos, Health, Financial, Adver
 ## Third-party partners (nutrition label partners)
 
 - **Google** — Firebase Auth, Firestore (sign-in + sync)  
-- **Mixpanel** — product analytics (respects in-app **Product analytics** toggle)  
+- **Mixpanel** — product analytics  
 - **Apple** — Sign in with Apple, App Store, on-device notifications  
 
 ## Privacy Policy URL
@@ -40,4 +40,4 @@ Do **not** declare: Precise Location, Contacts, Photos, Health, Financial, Adver
 - Guest mode works with no account.  
 - Delete profile is under Profile when signed in.  
 - Day notes sync when signed in and appear in history export.  
-- Users can turn off product analytics in **Settings → Privacy**.
+- Privacy policy, terms, and support are linked from Settings.

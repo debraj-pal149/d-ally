@@ -6,9 +6,10 @@ struct SettingsView: View {
     @AppStorage(AppStorageKey.appearanceMode) private var appearanceMode = AppDefaults.appearanceMode
     @AppStorage(AppStorageKey.notificationsMasterEnabled) private var masterEnabled = AppDefaults.notificationsMasterEnabled
     @AppStorage(AppStorageKey.defaultOverdueMode) private var defaultOverdue = AppDefaults.defaultOverdueMode
+    #if DEBUG
     @AppStorage(AppStorageKey.hasCompletedOnboarding) private var hasCompletedOnboarding = false
     @AppStorage(AppStorageKey.welcomeSeen) private var welcomeSeen = false
-    @AppStorage(AppStorageKey.analyticsEnabled) private var analyticsEnabled = AppDefaults.analyticsEnabled
+    #endif
     @Environment(\.modelContext) private var modelContext
     @Environment(\.colorScheme) private var scheme
     @State private var authState: NotificationAuthState = .notDetermined
@@ -80,12 +81,7 @@ struct SettingsView: View {
                     .listRowBackground(settingsRowBackground)
 
                     Section("Privacy") {
-                        Toggle("Product analytics", isOn: $analyticsEnabled)
-                        Text("Helps improve d·ally. Turn off to stop sending usage events to Mixpanel. Does not include the text of your day notes.")
-                            .font(AppTypography.footnote)
-                            .foregroundStyle(AppColors.textSecondary(scheme))
-                        Link("Privacy Policy", destination: URL(string: "https://dallytasks.app/privacy")!)
-                            .font(AppTypography.footnote)
+                        Link("Privacy Policy", destination: AppLinks.privacy)
                             .foregroundStyle(AppColors.aquaInk(scheme))
                     }
                     .listRowBackground(settingsRowBackground)
@@ -96,6 +92,7 @@ struct SettingsView: View {
                     }
                     .listRowBackground(settingsRowBackground)
 
+                    #if DEBUG
                     Section("Data") {
                         Button("Show welcome again") {
                             welcomeSeen = false
@@ -103,6 +100,19 @@ struct SettingsView: View {
                             // Re-arm Day spotlights after Welcome → Profile (same path as first install).
                             DayCoach.markPending()
                         }
+                    }
+                    .listRowBackground(settingsRowBackground)
+                    #endif
+
+                    Section {
+                        Link("dallytasks.app", destination: AppLinks.website)
+                            .foregroundStyle(AppColors.aquaInk(scheme))
+                        Link("Terms of Use", destination: AppLinks.terms)
+                            .foregroundStyle(AppColors.aquaInk(scheme))
+                        Link("Support", destination: AppLinks.support)
+                            .foregroundStyle(AppColors.aquaInk(scheme))
+                    } footer: {
+                        Text("Privacy, terms, and support are also on the website.")
                     }
                     .listRowBackground(settingsRowBackground)
                 }
@@ -116,9 +126,6 @@ struct SettingsView: View {
             }
             .onChange(of: masterEnabled) { _, _ in
                 NotificationSchedulingService.shared.rescheduleFromStore(context: modelContext)
-            }
-            .onChange(of: analyticsEnabled) { _, enabled in
-                Analytics.setEnabled(enabled)
             }
         }
     }

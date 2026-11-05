@@ -3,9 +3,9 @@ import Foundation
 enum AppStorageKey {
     static let hasCompletedOnboarding = "hasCompletedOnboarding"
     static let welcomeSeen = "welcomeSeen"
-    /// After Welcome + Profile, show the Day spotlight tour once (also re-armed by “Show welcome again”).
+    /// After Welcome + Profile, show the Day spotlight tour once (DEBUG Settings can re-arm it).
     static let dayCoachPending = "dayCoachPending"
-    /// Product analytics (Mixpanel). User can turn off in Settings → Privacy.
+    /// Legacy key; opt-out removed — Mixpanel always on in production.
     static let analyticsEnabled = "analyticsEnabled"
     /// Profile that last synced the habits on this phone. Empty means they belong to no profile yet.
     static let localDataOwnerUID = "localDataOwnerUID"
@@ -25,7 +25,6 @@ enum AppStorageKey {
 enum AppDefaults {
     static let appearanceMode = AppearanceMode.system.rawValue
     static let notificationsMasterEnabled = true
-    static let analyticsEnabled = true
     static let defaultOverdueMode = OverdueReminderMode.onceAfter30Minutes.rawValue
     static let quietHoursEnabled = true
     static let quietHoursStartHour = 22
@@ -81,6 +80,13 @@ enum NotificationIDs {
         f.dateFormat = "yyyyMMddHHmm"
         return f
     }()
+}
+
+enum AppLinks {
+    static let website = URL(string: "https://dallytasks.app")!
+    static let privacy = URL(string: "https://dallytasks.app/privacy")!
+    static let terms = URL(string: "https://dallytasks.app/terms")!
+    static let support = URL(string: "mailto:debraj@theminarnet.com")!
 }
 
 enum AppCopy {

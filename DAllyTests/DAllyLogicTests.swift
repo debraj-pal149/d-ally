@@ -990,23 +990,6 @@ final class DayCoachTests: XCTestCase {
         XCTAssertEqual(DayCoachStep.calendarTab.rawValue, 2)
     }
 
-    func testAnalyticsOptOutKeyDefaultsOn() {
-        let previous = UserDefaults.standard.object(forKey: AppStorageKey.analyticsEnabled)
-        defer {
-            if let previous {
-                UserDefaults.standard.set(previous, forKey: AppStorageKey.analyticsEnabled)
-            } else {
-                UserDefaults.standard.removeObject(forKey: AppStorageKey.analyticsEnabled)
-            }
-        }
-        UserDefaults.standard.removeObject(forKey: AppStorageKey.analyticsEnabled)
-        XCTAssertTrue(Analytics.isEnabled)
-        UserDefaults.standard.set(false, forKey: AppStorageKey.analyticsEnabled)
-        XCTAssertFalse(Analytics.isEnabled)
-        UserDefaults.standard.set(true, forKey: AppStorageKey.analyticsEnabled)
-        XCTAssertTrue(Analytics.isEnabled)
-    }
-
     func testWeekComparisonUsesPercentNotPoints() {
         let summary = WeeklyReviewAnalysis.Summary(kept: 5, skipped: 1, missed: 0, scheduled: 10)
         XCTAssertEqual(summary.percentage, 50)

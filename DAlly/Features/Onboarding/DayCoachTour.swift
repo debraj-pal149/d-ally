@@ -36,7 +36,7 @@ enum DayCoachStep: Int, CaseIterable, Equatable {
 }
 
 enum DayCoach {
-    /// Set when Profile setup finishes or Settings → Show welcome again.
+    /// Set when Profile setup finishes (DEBUG Settings can re-arm).
     /// Cleared when the Day spotlight tour finishes or is dismissed.
     static var isPending: Bool {
         get { UserDefaults.standard.bool(forKey: AppStorageKey.dayCoachPending) }
